@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoutPGH Schedule Editor</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Google Fonts: Russo One (Gobold-equivalent) + Outfit (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <div class="sb-brand">STOUTPGH</div>
+      <div class="sb-sub">Schedule Editor</div>
+      <div class="tab-row" id="tabRow"></div>
+    </div>
+    <div class="sb-body" id="sbBody">
+      <!-- Rendered by app.js -->
+    </div>
+    <div class="sb-footer">
+      <button class="exp-btn" onclick="exportPDF()">
+        <i class="fas fa-file-pdf"></i>&nbsp; Export PDF (Letter Landscape)
+      </button>
+      <button class="data-btn" onclick="exportData()">
+        <i class="fas fa-download"></i>&nbsp; Save Schedule (.json)
+      </button>
+      <button class="data-btn" onclick="importData()">
+        <i class="fas fa-upload"></i>&nbsp; Load Schedule (.json)
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== CANVAS AREA ===== -->
+  <div class="canvas-area">
+    <div class="mode-pill edit" id="modePill">
+      <i class="fas fa-pen"></i>&nbsp; Edit Mode
+    </div>
+    <div id="flyerWrap"></div>
+  </div>
+
+</div>
+
+<!-- Context menu -->
+<div class="ctx-menu" id="ctxMenu"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

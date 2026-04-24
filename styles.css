@@ -1,0 +1,842 @@
+/* ============================================================
+   StoutPGH Schedule Editor — styles.css
+   ============================================================ */
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: #181818;
+  color: #eee;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #1e1e1e;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.sb-header {
+  padding: 12px 14px 10px;
+  background: #161616;
+  border-bottom: 1px solid #252525;
+  flex-shrink: 0;
+}
+.sb-brand {
+  font-family: 'Russo One', sans-serif;
+  font-size: 17px;
+  color: #f0b429;
+  letter-spacing: 0.06em;
+  margin-bottom: 1px;
+}
+.sb-sub {
+  font-size: 9px;
+  color: #555;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* Tabs */
+.tab-row { display: flex; gap: 3px; }
+.tab-btn {
+  flex: 1;
+  padding: 5px 3px;
+  background: #222;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 700;
+  color: #666;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: #aaa; border-color: #3a3a3a; }
+.tab-btn.active { background: #f0b429; border-color: #f0b429; color: #111; }
+
+/* Sidebar body */
+.sb-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 12px;
+}
+.sb-body::-webkit-scrollbar { width: 3px; }
+.sb-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+/* Field helpers */
+.field-group { margin-bottom: 9px; }
+.lbl {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 3px;
+  display: block;
+}
+.finput {
+  width: 100%;
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: #ccc;
+  font-size: 11px;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  transition: border-color 0.15s;
+}
+.finput:focus { border-color: #f0b429; }
+.hdiv { border: none; border-top: 1px solid #222; margin: 10px 0; }
+
+/* Mode buttons */
+.mode-row { display: flex; gap: 5px; margin-bottom: 10px; }
+.mode-btn {
+  flex: 1;
+  padding: 7px 4px;
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  color: #555;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.mode-btn.active { border-color: #f0b429; color: #f0b429; background: rgba(240,180,41,0.08); }
+
+/* Undo/Data row */
+.action-row { display: flex; gap: 5px; margin-bottom: 10px; }
+.action-btn {
+  flex: 1;
+  padding: 6px 4px;
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.action-btn:hover { color: #bbb; border-color: #3a3a3a; }
+.action-btn:disabled { opacity: 0.3; cursor: default; }
+.action-btn.danger:hover { color: #e05555; border-color: #e05555; }
+
+/* Add block form */
+.add-form {
+  background: #141414;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 10px;
+}
+.fselect, .fminput {
+  width: 100%;
+  background: #0e0e0e;
+  border: 1px solid #252525;
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: #ccc;
+  font-size: 11px;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  margin-top: 3px;
+}
+.fselect:focus, .fminput:focus { border-color: #f0b429; }
+.add-form .lbl { margin-top: 7px; }
+.add-form .lbl:first-child { margin-top: 0; }
+.add-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px;
+  background: #f0b429;
+  border: none;
+  border-radius: 4px;
+  color: #111;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+.add-btn:hover { background: #ffc93d; }
+
+/* Sidebar footer */
+.sb-footer {
+  padding: 10px 12px;
+  border-top: 1px solid #222;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.exp-btn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #f0b429;
+  border-radius: 5px;
+  color: #f0b429;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.exp-btn:hover { background: #f0b429; color: #111; }
+.data-btn {
+  width: 100%;
+  padding: 7px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 5px;
+  color: #777;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.data-btn:hover { color: #bbb; border-color: #555; }
+
+/* ============================================================
+   CANVAS AREA (right of sidebar)
+   ============================================================ */
+.canvas-area {
+  flex: 1;
+  overflow: auto;
+  background: #0e0e0e;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 14px;
+}
+.canvas-area::-webkit-scrollbar { width: 8px; height: 8px; }
+.canvas-area::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
+
+.mode-pill {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  padding: 4px 14px;
+  border: 1px solid #252525;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  flex-shrink: 0;
+  align-self: center;
+}
+.mode-pill.edit { border-color: rgba(240,180,41,0.4); color: #f0b429; }
+
+/* ============================================================
+   EDIT MODE WRAPPER (time ruler + flyer side by side)
+   ============================================================ */
+.edit-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+/* Time ruler — outside the flyer canvas */
+.time-ruler {
+  width: 62px;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  overflow: hidden;
+  /* height matched by JS */
+}
+.ruler-header {
+  height: 62px; /* matches flyer-header */
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+.ruler-dayhdr {
+  height: 34px; /* matches day-headers row */
+  background: #222;
+  border-bottom: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #444;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: 'Outfit', sans-serif;
+}
+.ruler-slot {
+  height: var(--slot-h, 60px); /* set by JS */
+  border-bottom: 1px solid #2a2a2a;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 5px;
+  font-size: 9px;
+  color: #666;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-align: center;
+}
+.ruler-slot:last-child { border-bottom: none; }
+/* Half-hour ticks are dimmer */
+.ruler-slot.half { color: #3a3a3a; font-size: 8px; }
+
+/* ============================================================
+   FLYER — shared base
+   ============================================================ */
+/* 11in × 8.5in @ 96dpi → 1056 × 816px */
+.flyer {
+  width: 1056px;
+  flex-shrink: 0;
+  background: #fff;
+  color: #111;
+  font-family: 'Outfit', sans-serif;
+  position: relative;
+  /* white bleed-safe border */
+  outline: 8px solid #fff;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px #ccc, 0 14px 60px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+/* Edit mode: left border-radius removed (ruler is flush) */
+.flyer.edit-mode {
+  border-radius: 0 6px 6px 0;
+  height: auto;
+}
+
+/* Preview mode: fixed 816px, flex column so rows stretch */
+.flyer.preview-mode {
+  border-radius: 6px;
+  height: 816px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   FLYER HEADER
+   ============================================================ */
+.flyer-header {
+  background: #1e1e1e;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+  flex-shrink: 0;
+}
+.hdr-main {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  justify-content: center;
+}
+.logo-img-wrap {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  margin-right: 14px;
+}
+.logo-img-wrap img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+}
+.logo-fallback {
+  font-family: 'Russo One', sans-serif;
+  font-size: 26px;
+  color: #f0b429;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.logo-circle {
+  width: 22px; height: 22px;
+  background: #f0b429;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-circle i { font-size: 10px; color: #1e1e1e; }
+.hdr-loc {
+  font-family: 'Russo One', sans-serif;
+  font-size: 25px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.hdr-type {
+  font-family: 'Russo One', sans-serif;
+  font-size: 25px;
+  color: #f0b429;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.hdr-rev {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  color: #888;
+  text-align: right;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+.hdr-rev strong { display: block; font-size: 12px; color: #ccc; font-weight: 600; }
+
+/* ============================================================
+   DAY HEADERS
+   ============================================================ */
+.day-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f0b429;
+  flex-shrink: 0;
+  height: 34px;
+}
+.day-hdr-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Russo One', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #1e1e1e;
+  border-right: 1px solid rgba(0,0,0,0.12);
+}
+.day-hdr-cell:last-child { border-right: none; }
+
+/* ============================================================
+   SCHEDULE BODY
+   ============================================================ */
+.sched-body {
+  position: relative;
+}
+/* Edit mode: natural height */
+.flyer.edit-mode .sched-body { display: block; }
+/* Preview mode: flex fill */
+.flyer.preview-mode .sched-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+
+/* ============================================================
+   TIME ROW
+   Each time-slot row is ONE half-hour slot high.
+   Blocks that start at that slot span 2 rows (1 full hour) via min-height.
+   ============================================================ */
+.time-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid #e8e8e8;
+  position: relative;
+}
+.time-row:last-child { border-bottom: none; }
+.time-row:nth-child(odd)  { background: #fff; }
+.time-row:nth-child(even) { background: #f5f5f5; }
+
+/* Edit: fixed slot height driven by CSS var */
+.flyer.edit-mode .time-row {
+  min-height: var(--slot-h, 60px);
+}
+/* Preview: flex fill equally */
+.flyer.preview-mode .time-row {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ============================================================
+   DAY CELL
+   ============================================================ */
+.day-cell {
+  border-right: 1px solid #e0e0e0;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  min-width: 0;
+}
+.day-cell:last-child { border-right: none; }
+
+/* Drop target highlight */
+.day-cell.droptgt { background: rgba(240,180,41,0.12) !important; }
+
+/* ============================================================
+   CLASS BLOCK
+   ============================================================ */
+.cb {
+  border-radius: 7px;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  position: relative;
+  flex-shrink: 0;
+  /* Blocks span full hour: min-height = 2× slot height - gap */
+  min-height: calc(var(--slot-h, 60px) * 2 - 8px);
+}
+
+/* In edit mode only: draggable */
+.flyer.edit-mode .cb { cursor: grab; }
+.flyer.edit-mode .cb:active { cursor: grabbing; }
+.flyer.preview-mode .cb { cursor: default; }
+
+/* Drag states */
+.cb.dragging { opacity: 0.3; }
+.cb.dup-preview { outline: 2px dashed #f0b429; }
+
+/* Delete X button */
+.cb-del {
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 14px; height: 14px;
+  background: rgba(0,0,0,0.45);
+  border: none; border-radius: 50%;
+  color: #fff; font-size: 7px;
+  cursor: pointer; opacity: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; transition: opacity 0.15s; z-index: 2;
+}
+.cb:hover .cb-del { opacity: 1; }
+.flyer.preview-mode .cb-del { display: none !important; }
+
+/* Block text */
+.cb-time {
+  font-family: 'Russo One', sans-serif;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.cb-time i { font-size: 9px; }
+.cb-level {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+  font-family: 'Outfit', sans-serif;
+}
+.cb-disc {
+  font-family: 'Russo One', sans-serif;
+  font-size: 11px;
+  line-height: 1.25;
+}
+.cb-disc2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  opacity: 0.85;
+}
+
+/* NO CLASSES block */
+.cb.noc {
+  background: transparent !important;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default !important;
+  min-height: 0;
+  flex: 1;
+}
+.noc-text {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  color: #bbb;
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+/* ── Color themes ── */
+.c-bjj      { background: #ddeeff; }
+.c-bjj  .cb-time  { color: #1a4a8a; }
+.c-bjj  .cb-level { color: #3366aa; }
+.c-bjj  .cb-disc  { color: #1a3a6a; }
+.c-bjj  .cb-disc2 { color: #2a5080; }
+
+.c-mma      { background: #ede8f8; }
+.c-mma  .cb-time  { color: #5520aa; }
+.c-mma  .cb-level { color: #6635bb; }
+.c-mma  .cb-disc  { color: #441890; }
+.c-mma  .cb-disc2 { color: #5528a0; }
+
+.c-striking { background: #fce8ec; }
+.c-striking .cb-time  { color: #c0163a; }
+.c-striking .cb-level { color: #cc2244; }
+.c-striking .cb-disc  { color: #a00e2e; }
+.c-striking .cb-disc2 { color: #b01832; }
+
+.c-youth    { background: #e4f5e4; }
+.c-youth .cb-time  { color: #1a6a2a; }
+.c-youth .cb-level { color: #227832; }
+.c-youth .cb-disc  { color: #145520; }
+.c-youth .cb-disc2 { color: #1c6228; }
+
+/* Add-here button */
+.add-here {
+  width: 100%;
+  min-height: 24px;
+  background: transparent;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 11px;
+  transition: all 0.15s;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.flyer.edit-mode .add-here { display: flex; }
+.add-here:hover { border-color: #f0b429; color: #f0b429; }
+.flyer.preview-mode .add-here { display: none !important; }
+
+/* ============================================================
+   FLYER FOOTER
+   ============================================================ */
+.flyer-footer {
+  background: #fff;
+  border-top: 1.5px solid #e0e0e0;
+  padding: 9px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  flex-shrink: 0;
+  height: 42px;
+}
+.ftr-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  letter-spacing: 0.01em;
+}
+.ftr-item i { color: #777; font-size: 13px; }
+
+/* ============================================================
+   CONTEXT MENU
+   ============================================================ */
+.ctx-menu {
+  position: fixed;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  z-index: 1000;
+  min-width: 150px;
+  overflow: hidden;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.65);
+  display: none;
+}
+.ctx-item {
+  padding: 8px 14px;
+  font-size: 11px;
+  color: #bbb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+.ctx-item:hover { background: #252525; color: #f0b429; }
+.ctx-item i { font-size: 10px; width: 12px; }
+.ctx-sep { border-top: 1px solid #2a2a2a; }
+.ctx-item.danger:hover { color: #e05555; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 22px;
+  width: 310px;
+  font-family: 'Outfit', sans-serif;
+}
+.modal-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 15px;
+  color: #f0b429;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+.modal .lbl { margin-top: 8px; }
+.modal .lbl:first-of-type { margin-top: 0; }
+.modal select, .modal input {
+  width: 100%;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 6px 9px;
+  color: #ccc;
+  font-size: 12px;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  margin-top: 3px;
+}
+.modal select:focus, .modal input:focus { border-color: #f0b429; }
+.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
+.modal-cancel {
+  flex: 1; padding: 8px;
+  background: #222; border: 1px solid #333;
+  border-radius: 5px; color: #888; cursor: pointer;
+  font-size: 12px; font-family: 'Outfit', sans-serif;
+}
+.modal-cancel:hover { color: #bbb; }
+.modal-save {
+  flex: 1; padding: 8px;
+  background: #f0b429; border: none;
+  border-radius: 5px; color: #111;
+  font-weight: 700; cursor: pointer;
+  font-size: 12px; font-family: 'Outfit', sans-serif;
+}
+.modal-save:hover { background: #ffc93d; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #ccc;
+  font-family: 'Outfit', sans-serif;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.ok { border-color: #3a7a3a; color: #7ccc7c; }
+.toast.warn { border-color: #7a4a00; color: #f0b429; }
+
+/* ============================================================
+   DRAG GHOST
+   ============================================================ */
+.drag-ghost-el {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.88;
+  transform: rotate(2deg) scale(1.04);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+  border-radius: 7px;
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print {
+  body, html {
+    background: white !important;
+    overflow: visible !important;
+    width: 11in !important;
+    height: 8.5in !important;
+  }
+  .app { display: block !important; height: auto !important; overflow: visible !important; }
+  .sidebar { display: none !important; }
+  .canvas-area {
+    padding: 0 !important;
+    background: white !important;
+    display: block !important;
+    overflow: visible !important;
+    align-items: flex-start !important;
+  }
+  .mode-pill { display: none !important; }
+  .edit-wrap { display: block !important; }
+  .time-ruler { display: none !important; }
+  .flyer {
+    width: 11in !important;
+    height: 8.5in !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .sched-body { flex: 1 !important; display: flex !important; flex-direction: column !important; }
+  .time-row { flex: 1 !important; min-height: 0 !important; }
+  .cb-del, .add-here { display: none !important; }
+  @page { size: 11in 8.5in landscape; margin: 0; }
+}
