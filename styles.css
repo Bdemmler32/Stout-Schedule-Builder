@@ -72,12 +72,6 @@ html, body {
 /* fselect/fminput kept for any legacy use but primarily modal handles inputs now */
 
 .sb-footer { padding: 10px 12px; border-top: 1px solid #222; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
-.exp-btn {
-  width: 100%; padding: 9px; background: transparent; border: 1px solid #f0b429; border-radius: 5px;
-  color: #f0b429; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.2s;
-}
-.exp-btn:hover { background: #f0b429; color: #111; }
 .data-btn {
   width: 100%; padding: 7px; background: transparent; border: 1px solid #333; border-radius: 5px;
   color: #777; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif;
@@ -336,13 +330,70 @@ html, body {
   font-family: 'Outfit', sans-serif;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: background 0.15s;
+  transition: background 0.15s, opacity 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
-.open-modal-btn:hover { background: #ffc93d; }
+.open-modal-btn:hover:not(.disabled) { background: #ffc93d; }
+.open-modal-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #888;
+}
+
+/* Split export button */
+.exp-split {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #f0b429;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+.exp-split-left {
+  flex: 1;
+  padding: 9px 10px;
+  background: transparent;
+  border: none;
+  color: #f0b429;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.exp-split-left:hover { background: #f0b429; color: #111; }
+.exp-split-divider {
+  width: 1px;
+  background: #f0b429;
+  flex-shrink: 0;
+}
+.exp-split-right {
+  padding: 9px 13px;
+  background: transparent;
+  border: none;
+  color: #f0b429;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.exp-split-right:hover { background: #f0b429; color: #111; }
 
 /* ── BLOCK MODAL ── */
 .bm-overlay {

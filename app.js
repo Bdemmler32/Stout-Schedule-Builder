@@ -282,7 +282,8 @@ function renderSidebar() {
       <input class="finput" value="${esc(s.web)}" placeholder="e.g. www.StoutPGH.com"
         oninput="sch().web=this.value;saveToStorage();renderFlyer()"></div>
     <hr class="hdiv">
-    <button class="open-modal-btn" onclick="openModal()">
+    <button class="open-modal-btn ${mode==='preview' ? 'disabled' : ''}"
+      onclick="${mode==='preview' ? "toast('Switch to Edit Mode to add blocks','warn')" : 'openModal()'}">
       <i class="fas fa-plus"></i> Add Block
     </button>`;
   updateUndoBtn();
@@ -705,15 +706,102 @@ function hideCtx() { document.getElementById('ctxMenu').style.display = 'none'; 
 // The white border/outline IS captured because we render the
 // outer wrapper div that includes it.
 // ============================================================
+// ============================================================
+// PDF NAMING HELPERS
+// ============================================================
+
+// Map schedule type string → short label for filename
+function shortType(stype) {
+  const t = (stype || '').toUpperCase();
+  if (t.includes('BJJ') && t.includes('YOUTH')) return 'Youth';
+  if (t.includes('YOUTH'))    return 'Youth';
+  if (t.includes('STRIKING')) return 'Striking';
+  if (t.includes('BJJ'))      return 'BJJ';
+  if (t.includes('MMA'))      return 'MMA';
+  // Fallback: take first word
+  return (stype || 'Schedule').split(' ')[0];
+}
+
+// Normalise location for filename: swap / → -, collapse spaces
+function cleanLocation(loc) {
+  return (loc || 'StoutPGH')
+    .replace(/\//g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// Parse revision "M/D/YY" or "MM/DD/YYYY" → "MMDDYYYY"
+function revToDateStr(rev) {
+  if (!rev) {
+    const d = new Date();
+    return String(d.getMonth()+1).padStart(2,'0')
+         + String(d.getDate()).padStart(2,'0')
+         + String(d.getFullYear());
+  }
+  const parts = rev.split('/');
+  if (parts.length !== 3) return rev.replace(/\//g,'');
+  const [m, d, y] = parts;
+  const year = y.length === 2 ? '20' + y : y;
+  return m.padStart(2,'0') + d.padStart(2,'0') + year;
+}
+
+// Build filename for a single schedule
+function buildFilename(s) {
+  return `StoutPGH-${shortType(s.stype)}-${cleanLocation(s.location)}-${revToDateStr(s.rev)}.pdf`;
+}
+
+// Build filename for the all-schedules export (use first schedule's rev date)
+function buildAllFilename() {
+  const rev = schedules[0]?.rev || '';
+  return `StoutPGH-All-Schedules-${revToDateStr(rev)}.pdf`;
+}
+
+// ============================================================
+// CAPTURE a single schedule as a canvas
+// Temporarily renders that schedule's flyer in preview mode,
+// captures it, then restores state.
+// ============================================================
+async function captureSchedule(tabIndex) {
+  const prevTab  = activeTab;
+  const prevMode = mode;
+
+  activeTab = tabIndex;
+  mode      = 'preview';
+  renderFlyer();
+  await new Promise(r => setTimeout(r, 150)); // let layout + fonts settle
+
+  const flyer = document.getElementById('flyerEl');
+  const canvas = await html2canvas(flyer, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    logging: false,
+  });
+
+  // Restore
+  activeTab = prevTab;
+  mode      = prevMode;
+  renderFlyer();
+  updatePill();
+  renderSidebar();
+
+  return canvas;
+}
+
+// ============================================================
+// EXPORT CURRENT PAGE
+// Naming: StoutPGH-BJJ-MONROEVILLE-EAST-04242026.pdf
+// ============================================================
 async function exportPDF() {
-  // Switch to preview mode for the capture
   const prevMode = mode;
   if (mode !== 'preview') {
     mode = 'preview';
     renderFlyer();
     updatePill();
     renderSidebar();
-    await new Promise(r => setTimeout(r, 120)); // let fonts/layout settle
+    await new Promise(r => setTimeout(r, 150));
   }
 
   const flyer = document.getElementById('flyerEl');
@@ -722,41 +810,69 @@ async function exportPDF() {
   toast('Generating PDF…', '');
 
   try {
-    // html2canvas renders the DOM element at 2× for crisp output
     const canvas = await html2canvas(flyer, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: null, // transparent so outline:8px solid #fff shows
+      backgroundColor: '#ffffff',
       logging: false,
     });
 
-    // jsPDF: Letter landscape = 11" × 8.5" = 279.4mm × 215.9mm
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
-
-    const pageW  = pdf.internal.pageSize.getWidth();   // 279.4
-    const pageH  = pdf.internal.pageSize.getHeight();  // 215.9
-    const imgW   = canvas.width;
-    const imgH   = canvas.height;
-    const ratio  = Math.min(pageW / imgW, pageH / imgH);
-    const drawW  = imgW * ratio;
-    const drawH  = imgH * ratio;
-    const offX   = (pageW - drawW) / 2;
-    const offY   = (pageH - drawH) / 2;
+    const pdf  = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const ratio = Math.min(pageW / canvas.width, pageH / canvas.height);
+    const drawW = canvas.width  * ratio;
+    const drawH = canvas.height * ratio;
+    const offX  = (pageW - drawW) / 2;
+    const offY  = (pageH - drawH) / 2;
 
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offX, offY, drawW, drawH);
-    pdf.save(`${sch().stype || 'StoutPGH-Schedule'}.pdf`);
+    pdf.save(buildFilename(sch()));
     toast('PDF downloaded!', 'ok');
   } catch(err) {
     console.error(err);
-    toast('PDF export failed: ' + err.message, 'warn');
+    toast('Export failed: ' + err.message, 'warn');
   }
 
-  // Restore mode
   if (prevMode !== 'preview') {
     mode = prevMode;
     renderFlyer(); updatePill(); renderSidebar();
+  }
+}
+
+// ============================================================
+// EXPORT ALL (3 pages, one per schedule tab)
+// Naming: StoutPGH-All-Schedules-04242026.pdf
+// ============================================================
+async function exportAllPDF() {
+  toast('Generating all pages…', '');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+
+    for (let i = 0; i < schedules.length; i++) {
+      if (i > 0) pdf.addPage();
+
+      const canvas = await captureSchedule(i);
+      const ratio  = Math.min(pageW / canvas.width, pageH / canvas.height);
+      const drawW  = canvas.width  * ratio;
+      const drawH  = canvas.height * ratio;
+      const offX   = (pageW - drawW) / 2;
+      const offY   = (pageH - drawH) / 2;
+
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offX, offY, drawW, drawH);
+    }
+
+    pdf.save(buildAllFilename());
+    toast('All schedules exported!', 'ok');
+  } catch(err) {
+    console.error(err);
+    toast('Export failed: ' + err.message, 'warn');
   }
 }
 
