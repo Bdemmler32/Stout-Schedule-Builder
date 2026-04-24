@@ -1,5 +1,5 @@
 /* ============================================================
-   StoutPGH Schedule Editor — styles.css
+   StoutPGH Schedule Builder — styles.css
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,36 +69,7 @@ html, body {
 .action-btn:hover { color: #bbb; border-color: #3a3a3a; }
 .action-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 
-.add-form { background: #141414; border: 1px solid #222; border-radius: 6px; padding: 10px; }
-.fselect, .fminput {
-  width: 100%; background: #0e0e0e; border: 1px solid #252525; border-radius: 4px;
-  padding: 5px 8px; color: #ccc; font-size: 11px; outline: none; font-family: 'Outfit', sans-serif; margin-top: 3px;
-}
-.fselect:focus, .fminput:focus { border-color: #f0b429; }
-.add-form .lbl { margin-top: 7px; }
-.add-form .lbl:first-child { margin-top: 0; }
-.add-btn {
-  width: 100%; margin-top: 10px; padding: 7px; background: #f0b429; border: none; border-radius: 4px;
-  color: #111; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.15s;
-}
-.add-btn:hover { background: #ffc93d; }
-.cancel-btn {
-  width: 100%;
-  margin-top: 5px;
-  padding: 6px;
-  background: transparent;
-  border: 1px solid #555;
-  border-radius: 4px;
-  color: #888;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.04em;
-  transition: all 0.15s;
-}
-.cancel-btn:hover { color: #e05555; border-color: #e05555; }
+/* fselect/fminput kept for any legacy use but primarily modal handles inputs now */
 
 .sb-footer { padding: 10px 12px; border-top: 1px solid #222; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
 .exp-btn {
@@ -299,15 +270,11 @@ html, body {
 /* Secondary line: Outfit regular, slightly muted */
 .cb-disc2  { font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 400; line-height: 1.2; opacity: 0.82; }
 
-/* NO CLASSES */
-.cb.noc {
-  background: transparent !important; border-radius: 0; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  cursor: default !important; flex: 1 1 100%; align-self: stretch;
-}
+/* NO CLASSES — just a regular block with c-noc color, centered text */
 .noc-text {
-  font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 11px; color: #bbb;
-  text-align: center; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.6;
+  font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 12px;
+  color: #aaa; text-align: center; letter-spacing: 0.1em;
+  text-transform: uppercase; line-height: 1.5;
 }
 
 /* Colors */
@@ -331,6 +298,9 @@ html, body {
 .c-youth .cb-level { color: #227832; }
 .c-youth .cb-disc  { color: #145520; }
 .c-youth .cb-disc2 { color: #1c6228; }
+/* No Classes — neutral grey card, sits in the normal timeline */
+.c-noc      { background: #efefef; }
+.c-noc .noc-text { color: #aaa; }
 
 /* ── FOOTER (44px) ── */
 .flyer-footer {
@@ -352,19 +322,194 @@ html, body {
 .ctx-sep { border-top: 1px solid #2a2a2a; }
 .ctx-item.danger:hover { color: #e05555; }
 
-/* ── MODAL ── */
-.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 500; display: flex; align-items: center; justify-content: center; }
-.modal { background: #1e1e1e; border: 1px solid #333; border-radius: 10px; padding: 22px; width: 310px; font-family: 'Outfit', sans-serif; }
-.modal-title { font-family: 'Russo One', sans-serif; font-size: 15px; color: #f0b429; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
-.modal .lbl { margin-top: 8px; }
-.modal .lbl:first-of-type { margin-top: 0; }
-.modal select, .modal input { width: 100%; background: #141414; border: 1px solid #2a2a2a; border-radius: 4px; padding: 6px 9px; color: #ccc; font-size: 12px; outline: none; font-family: 'Outfit', sans-serif; margin-top: 3px; }
-.modal select:focus, .modal input:focus { border-color: #f0b429; }
-.modal-btns { display: flex; gap: 8px; margin-top: 16px; }
-.modal-cancel { flex: 1; padding: 8px; background: #222; border: 1px solid #333; border-radius: 5px; color: #888; cursor: pointer; font-size: 12px; font-family: 'Outfit', sans-serif; }
-.modal-cancel:hover { color: #bbb; }
-.modal-save { flex: 1; padding: 8px; background: #f0b429; border: none; border-radius: 5px; color: #111; font-weight: 700; cursor: pointer; font-size: 12px; font-family: 'Outfit', sans-serif; }
-.modal-save:hover { background: #ffc93d; }
+/* Open modal button in sidebar */
+.open-modal-btn {
+  width: 100%;
+  padding: 11px;
+  background: #f0b429;
+  border: none;
+  border-radius: 6px;
+  color: #111;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.open-modal-btn:hover { background: #ffc93d; }
+
+/* ── BLOCK MODAL ── */
+.bm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: background 0.2s;
+}
+.bm-overlay.open {
+  background: rgba(0,0,0,0.65);
+  pointer-events: all;
+}
+.bm-dialog {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  font-family: 'Outfit', sans-serif;
+  overflow: hidden;
+  /* Start hidden, animate in */
+  opacity: 0;
+  transform: translateY(-16px) scale(0.97);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.bm-overlay.open .bm-dialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Coloured header strip */
+.bm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  transition: background 0.2s;
+}
+.bm-title {
+  font-family: 'Russo One', sans-serif;
+  font-size: 15px;
+  color: #111;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bm-close {
+  background: rgba(0,0,0,0.15);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.bm-close:hover { background: rgba(0,0,0,0.3); }
+
+/* Body */
+.bm-body {
+  padding: 18px 18px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bm-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.bm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bm-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666;
+}
+.bm-opt {
+  font-weight: 400;
+  color: #444;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 9px;
+}
+.bm-input, .bm-select {
+  background: #141414;
+  border: 1px solid #2e2e2e;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #ddd;
+  font-size: 13px;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.bm-input:focus, .bm-select:focus { border-color: #f0b429; }
+.bm-type-select { cursor: pointer; }
+
+/* Footer */
+.bm-footer {
+  padding: 12px 18px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bm-footer-right {
+  display: flex;
+  gap: 8px;
+}
+.bm-btn-cancel {
+  padding: 9px 18px;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #888;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+}
+.bm-btn-cancel:hover { color: #bbb; border-color: #555; }
+.bm-btn-save {
+  padding: 9px 22px;
+  background: #f0b429;
+  border: none;
+  border-radius: 6px;
+  color: #111;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.05em;
+  transition: background 0.15s;
+}
+.bm-btn-save:hover { background: #ffc93d; }
+.bm-btn-danger {
+  padding: 9px 14px;
+  background: transparent;
+  border: 1px solid #5a2020;
+  border-radius: 6px;
+  color: #aa4444;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bm-btn-danger:hover { background: #5a2020; color: #ffaaaa; }
 
 /* ── TOAST ── */
 .toast {
