@@ -186,24 +186,47 @@ function loadData() {
 
 // ============================================================
 // ROW COMPUTATION
-// getRows(s) → array of row descriptors:
-//   { noc: true }    — one row for all "No Classes" blocks
-//   { time: '...' } — one row per unique time present
-// Rows are ordered: noc first, then times ascending.
+// getRows(s) → array of row descriptors, ordered noc-first then
+// time ascending. Concurrent blocks (multiple blocks at the same
+// time in any day) produce DUPLICATE rows, one per "slot index".
+//
+// Each entry is one of:
+//   { noc: true }           — row for No-Classes blocks
+//   { time: '9:00 AM', idx: 0 }  — 1st block slot at this time
+//   { time: '9:00 AM', idx: 1 }  — 2nd block slot at same time
+//
+// In the cell renderer, day-cell at (time, idx) shows
+// days[di].filter(time)[idx] — i.e. one block per row.
+// The ruler shows the time label only on idx===0 rows.
 // ============================================================
 function getRows(s) {
-  const timeSet = new Set();
+  // For each unique time, find the max number of blocks across all days
+  const timeCount = {}; // time → max concurrent count
   let hasNoc = false;
+
   s.days.forEach(day => {
+    // Group non-noc blocks by time
+    const byTime = {};
     day.forEach(b => {
-      if (b.type === 'noc') hasNoc = true;
-      else if (b.time) timeSet.add(b.time);
+      if (b.type === 'noc') { hasNoc = true; return; }
+      if (!b.time) return;
+      byTime[b.time] = (byTime[b.time] || 0) + 1;
+    });
+    Object.entries(byTime).forEach(([t, count]) => {
+      timeCount[t] = Math.max(timeCount[t] || 0, count);
     });
   });
-  const times = [...timeSet].sort((a,b) => toMins(a) - toMins(b));
+
+  const times = Object.keys(timeCount).sort((a,b) => toMins(a) - toMins(b));
+
   const rows = [];
   if (hasNoc) rows.push({ noc: true });
-  times.forEach(t => rows.push({ time: t }));
+  times.forEach(t => {
+    const n = timeCount[t];
+    for (let idx = 0; idx < n; idx++) {
+      rows.push({ time: t, idx });
+    }
+  });
   return rows;
 }
 
@@ -255,8 +278,8 @@ function renderSidebar() {
     <div class="field-group"><span class="lbl">Website</span>
       <input class="finput" value="${esc(s.web)}" oninput="sch().web=this.value;renderFlyer()"></div>
     <hr class="hdiv">
-    <span class="lbl" style="margin-bottom:7px;display:block">Add Block</span>
-    <div class="add-form">
+    <span class="lbl" id="add-form-title" style="margin-bottom:7px;display:block">Add Block</span>
+    <div class="add-form" id="add-form-wrap">
       <span class="lbl">Day</span>
       <select class="fselect" id="nb-day">${dayOpts}</select>
       <span class="lbl">Time</span>
@@ -269,7 +292,8 @@ function renderSidebar() {
       <input class="fminput" id="nb-disc2" placeholder="e.g. Adult MMA">
       <span class="lbl">Type / Color</span>
       <select class="fselect" id="nb-type">${typeOpts}</select>
-      <button class="add-btn" onclick="addBlock()"><i class="fas fa-plus"></i> Add Block</button>
+      <button class="add-btn" id="add-form-btn" onclick="addBlock()"><i class="fas fa-plus"></i> Add Block</button>
+      <button class="cancel-btn" id="cancel-edit-btn" onclick="cancelEdit()" style="display:none">✕ Cancel Edit</button>
     </div>`;
   updateUndoBtn();
 }
@@ -287,22 +311,28 @@ function renderFlyer() {
   rows.forEach((row, ri) => {
     const isNoc = !!row.noc;
     const bg    = ri % 2 === 0 ? '#fff' : '#f5f5f5';
-    // Row height in edit mode
     const rowH  = isNoc ? SLOT_H : SLOT_H * 2;
     const heightAttr = !isPreview ? `style="height:${rowH}px;background:${bg}"` : `style="background:${bg}"`;
     const rowCls = isNoc ? 'time-row noc-row' : 'time-row';
 
     let cells = '';
     DAYS.forEach((_, di) => {
-      const matches = isNoc
-        ? s.days[di].filter(b => b.type === 'noc')
-        : s.days[di].filter(b => b.type !== 'noc' && b.time === row.time);
+      let matches;
+      if (isNoc) {
+        matches = s.days[di].filter(b => b.type === 'noc');
+      } else {
+        // All blocks at this time, sorted consistently; pick the one at row.idx
+        const atTime = s.days[di].filter(b => b.type !== 'noc' && b.time === row.time);
+        matches = atTime[row.idx] ? [atTime[row.idx]] : [];
+      }
 
       const blocksHTML = matches.map(b => blockHTML(b, di, isPreview)).join('');
-      const addBtn     = !isPreview
+      // Add-here only on first concurrent row (idx===0) or noc, to avoid duplicate buttons
+      const showAdd = !isPreview && (isNoc || row.idx === 0);
+      const addBtn  = showAdd
         ? `<button class="add-here" onclick="quickAdd(${di},'${isNoc?'':row.time}')" title="Add here">+</button>`
         : '';
-      const dropAttrs  = !isPreview
+      const dropAttrs = !isPreview
         ? `ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,${di},'${isNoc?'':row.time}')"`
         : '';
 
@@ -354,14 +384,17 @@ function renderFlyer() {
 }
 
 // ── Ruler: mirrors .flyer-header(62) + .day-headers(34) + one cell per row ──
+// Shows time label only on first row of each time group (idx===0 or noc).
 function buildRuler(rows) {
   let html = `<div class="ruler-hdr-spacer"></div><div class="ruler-day-spacer">TIME</div>`;
   rows.forEach(row => {
-    const isNoc = !!row.noc;
-    const h     = isNoc ? SLOT_H : SLOT_H * 2;
-    const cls   = isNoc ? 'ruler-cell noc-cell' : 'ruler-cell';
-    const label = isNoc ? '' : row.time;
-    html += `<div class="${cls}" style="height:${h}px">${label}</div>`;
+    const isNoc  = !!row.noc;
+    const h      = isNoc ? SLOT_H : SLOT_H * 2;
+    const cls    = isNoc ? 'ruler-cell noc-cell' : 'ruler-cell';
+    // Show label only on first row of this time (idx===0); continuation rows are blank
+    const label  = isNoc ? '' : (row.idx === 0 ? row.time : '·');
+    const dimmed = (!isNoc && row.idx > 0) ? ' style="color:#2a2a2a"' : '';
+    html += `<div class="${cls}" style="height:${h}px"${dimmed}>${label}</div>`;
   });
   return html;
 }
@@ -379,7 +412,10 @@ function blockHTML(b, di, isPreview) {
   const T = TYPES.find(t => t.id === b.type) || TYPES[0];
   const draggable = !isPreview ? 'draggable="true"' : '';
   const evts = !isPreview
-    ? `ondragstart="onDragStart(event,'${b.id}',${di})" ondragend="onDragEnd(event)" oncontextmenu="showCtx(event,'${b.id}',${di})"`
+    ? `ondragstart="onDragStart(event,'${b.id}',${di})"
+       ondragend="onDragEnd(event)"
+       oncontextmenu="showCtx(event,'${b.id}',${di})"
+       onclick="loadBlockToPanel('${b.id}',${di},event)"`
     : '';
   const del = !isPreview
     ? `<button class="cb-del" onclick="delBlock(event,'${b.id}',${di})"><i class="fas fa-times"></i></button>`
@@ -396,16 +432,31 @@ function blockHTML(b, di, isPreview) {
   </div>`;
 }
 
+function cancelEdit() {
+  clearEditingState();
+  renderFlyer();
+  // Reset form fields
+  document.getElementById('nb-level').value = '';
+  document.getElementById('nb-disc').value  = '';
+  document.getElementById('nb-disc2').value = '';
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+}
+
 // ============================================================
 // MODE / TAB
 // ============================================================
 function setMode(m) {
+  editingBlockId = null;
+  editingBlockDi = null;
   mode = m;
   updatePill();
   renderSidebar();
   renderFlyer();
 }
 function setTab(i) {
+  editingBlockId = null;
+  editingBlockDi = null;
   activeTab = i;
   renderSidebar();
   renderFlyer();
@@ -432,12 +483,43 @@ function addBlock() {
   const disc2 =  document.getElementById('nb-disc2').value.trim();
   const type  =  document.getElementById('nb-type').value;
 
+  // If we're editing an existing block, update it in place
+  if (editingBlockId) {
+    const block = sch().days[editingBlockDi].find(b => b.id === editingBlockId);
+    if (block) {
+      snapshot();
+      // If day changed, move the block
+      if (editingBlockDi !== di) {
+        sch().days[editingBlockDi] = sch().days[editingBlockDi].filter(b => b.id !== editingBlockId);
+        block.time  = time;
+        block.level = level;
+        block.disc  = disc;
+        block.disc2 = disc2;
+        block.type  = type;
+        sch().days[di].push(block);
+        sortDay(di);
+      } else {
+        block.time  = time;
+        block.level = level;
+        block.disc  = disc;
+        block.disc2 = disc2;
+        block.type  = type;
+        sortDay(di);
+      }
+      clearEditingState();
+      renderFlyer();
+      toast('Block updated', 'ok');
+      return;
+    }
+  }
+
+  // Otherwise add a new block
   const block = (type === 'noc') ? mkNoc() : mkBlock(time, level, disc, disc2, type);
   snapshot();
   sch().days[di].push(block);
   sortDay(di);
   renderFlyer();
-  toast('Block added','ok');
+  toast('Block added', 'ok');
 }
 
 function quickAdd(di, time) {
@@ -446,6 +528,69 @@ function quickAdd(di, time) {
   if (dayEl)  dayEl.value  = di;
   if (timeEl && time) timeEl.value = time;
   document.getElementById('nb-disc')?.focus();
+}
+
+// Click a block in edit mode → pre-fill the sidebar form with its data.
+// The form title changes to "Editing" and the button becomes "Save Changes".
+// This edits the block in-place when submitted (no new block created).
+let editingBlockId = null;
+let editingBlockDi = null;
+
+function loadBlockToPanel(blockId, di, e) {
+  // Don't fire if the delete button was clicked
+  if (e && e.target.closest('.cb-del')) return;
+
+  const block = sch().days[di].find(b => b.id === blockId);
+  if (!block || block.type === 'noc') return;
+
+  editingBlockId = blockId;
+  editingBlockDi = di;
+
+  // Populate form fields
+  const dayEl   = document.getElementById('nb-day');
+  const timeEl  = document.getElementById('nb-time');
+  const levelEl = document.getElementById('nb-level');
+  const discEl  = document.getElementById('nb-disc');
+  const disc2El = document.getElementById('nb-disc2');
+  const typeEl  = document.getElementById('nb-type');
+  if (!dayEl) return; // sidebar not rendered yet
+
+  dayEl.value   = di;
+  timeEl.value  = block.time;
+  levelEl.value = block.level  || '';
+  discEl.value  = block.disc   || '';
+  disc2El.value = block.disc2  || '';
+  typeEl.value  = block.type;
+
+  // Update form title + button to reflect "edit" state
+  const titleEl  = document.getElementById('add-form-title');
+  const btnEl    = document.getElementById('add-form-btn');
+  const cancelEl = document.getElementById('cancel-edit-btn');
+  if (titleEl)  titleEl.textContent = 'Editing Block';
+  if (btnEl)    { btnEl.innerHTML = '✓ Save Changes'; btnEl.style.background = '#2a7a2a'; }
+  if (cancelEl) cancelEl.style.display = 'block';
+
+  // Highlight all blocks, dim others, highlight this one
+  document.querySelectorAll('.cb').forEach(el => el.style.opacity = '0.45');
+  const target = document.querySelector(`.cb[data-id="${blockId}"]`);
+  if (target) { target.style.opacity = '1'; target.style.outline = '2px solid #f0b429'; }
+
+  // Scroll sidebar to the form
+  const form = document.getElementById('add-form-wrap');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  toast('Block loaded — edit and click Save Changes', 'ok');
+}
+
+function clearEditingState() {
+  editingBlockId = null;
+  editingBlockDi = null;
+  // Reset all block highlights
+  document.querySelectorAll('.cb').forEach(el => { el.style.opacity = ''; el.style.outline = ''; });
+  const titleEl = document.getElementById('add-form-title');
+  const btnEl   = document.getElementById('add-form-btn');
+  if (titleEl) titleEl.textContent = 'Add Block';
+  if (btnEl)   { btnEl.innerHTML = '<i class="fas fa-plus"></i> Add Block'; btnEl.style.background = ''; }
 }
 
 function delBlock(e, blockId, di) {
@@ -656,11 +801,11 @@ html,body{width:11in;height:8.5in;overflow:hidden;font-family:'Outfit',sans-seri
 .cb.noc{background:transparent;border-radius:0;padding:0;display:flex;align-items:center;justify-content:center;flex:1 1 100%;align-self:stretch}
 .noc-text{font-family:'Outfit',sans-serif;font-weight:500;font-size:11px;color:#bbb;text-align:center;letter-spacing:0.06em;text-transform:uppercase;line-height:1.6}
 .cb-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%}
-.cb-time{font-family:'Russo One',sans-serif;font-size:11.5px;display:flex;align-items:center;justify-content:center;gap:4px;line-height:1.15;white-space:nowrap}
-.cb-time i{font-size:9px}
-.cb-level{font-size:10px;font-weight:400;line-height:1.3;font-family:'Outfit',sans-serif}
-.cb-disc{font-family:'Russo One',sans-serif;font-size:11px;line-height:1.25}
-.cb-disc2{font-family:'Outfit',sans-serif;font-size:10px;font-weight:400;line-height:1.2;opacity:0.85}
+.cb-time{font-family:'Russo One',sans-serif;font-size:13px;display:flex;align-items:center;justify-content:center;gap:4px;line-height:1.15;white-space:nowrap}
+.cb-time i{font-size:10px}
+.cb-level{font-size:11.5px;font-weight:400;line-height:1.3;font-family:'Outfit',sans-serif}
+.cb-disc{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;line-height:1.25}
+.cb-disc2{font-family:'Outfit',sans-serif;font-size:11.5px;font-weight:400;line-height:1.2;opacity:0.82}
 .c-bjj{background:#ddeeff}.c-bjj .cb-time{color:#1a4a8a}.c-bjj .cb-level{color:#3366aa}.c-bjj .cb-disc{color:#1a3a6a}.c-bjj .cb-disc2{color:#2a5080}
 .c-mma{background:#ede8f8}.c-mma .cb-time{color:#5520aa}.c-mma .cb-level{color:#6635bb}.c-mma .cb-disc{color:#441890}.c-mma .cb-disc2{color:#5528a0}
 .c-striking{background:#fce8ec}.c-striking .cb-time{color:#c0163a}.c-striking .cb-level{color:#cc2244}.c-striking .cb-disc{color:#a00e2e}.c-striking .cb-disc2{color:#b01832}
