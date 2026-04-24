@@ -103,6 +103,12 @@ let drag        = null;
 let ghostEl     = null;
 let isDuplicate = false;
 
+// Canvas zoom (visual only — does not affect PDF export)
+let zoomLevel   = 1.0;
+const ZOOM_MIN  = 0.4;
+const ZOOM_MAX  = 1.0;
+const ZOOM_STEP = 0.1;
+
 // No longer needed — block editing now uses the modal
 // editingBlockId / editingBlockDi removed
 
@@ -156,6 +162,41 @@ function undo() {
 function updateUndoBtn() {
   const btn = document.getElementById('undoBtn');
   if (btn) btn.disabled = (histIdx <= 0);
+}
+
+// ============================================================
+// ZOOM
+// ============================================================
+function zoomIn() {
+  zoomLevel = Math.min(ZOOM_MAX, +(zoomLevel + ZOOM_STEP).toFixed(1));
+  applyZoom();
+}
+function zoomOut() {
+  zoomLevel = Math.max(ZOOM_MIN, +(zoomLevel - ZOOM_STEP).toFixed(1));
+  applyZoom();
+}
+function applyZoom() {
+  const wrap = document.getElementById('zoomWrap');
+  if (!wrap) return;
+  wrap.style.transform       = `scale(${zoomLevel})`;
+  wrap.style.transformOrigin = 'top center';
+  // Adjust the outer flyerWrap height so the canvas-area doesn't leave dead space
+  // when zoomed out. zoomWrap still occupies its natural size in layout,
+  // so we set flyerWrap height to the scaled visual height.
+  const flyerWrap = document.getElementById('flyerWrap');
+  if (flyerWrap) {
+    const naturalH = wrap.scrollHeight || wrap.offsetHeight;
+    flyerWrap.style.height  = Math.round(naturalH * zoomLevel) + 'px';
+    flyerWrap.style.overflow = 'visible';
+  }
+  // Update zoom % label
+  const lbl = document.getElementById('zoomLbl');
+  if (lbl) lbl.textContent = Math.round(zoomLevel * 100) + '%';
+  // Update button disabled states
+  const btnIn  = document.getElementById('zoomInBtn');
+  const btnOut = document.getElementById('zoomOutBtn');
+  if (btnIn)  btnIn.disabled  = zoomLevel >= ZOOM_MAX;
+  if (btnOut) btnOut.disabled = zoomLevel <= ZOOM_MIN;
 }
 
 function initHistory() {
@@ -260,6 +301,11 @@ function renderSidebar() {
     <div class="action-row">
       <button class="action-btn" id="undoBtn" onclick="undo()" disabled><i class="fas fa-undo"></i> Undo</button>
     </div>
+    <div class="zoom-row">
+      <button class="zoom-btn" id="zoomOutBtn" onclick="zoomOut()" title="Zoom out"><i class="fas fa-minus"></i></button>
+      <span class="zoom-lbl" id="zoomLbl">100%</span>
+      <button class="zoom-btn" id="zoomInBtn"  onclick="zoomIn()"  title="Zoom in"  disabled><i class="fas fa-plus"></i></button>
+    </div>
 
     <hr class="hdiv">
     <div class="field-group"><span class="lbl">Location</span>
@@ -306,9 +352,18 @@ function renderFlyer() {
 
     let cells = '';
     DAYS.forEach((_, di) => {
-      // Pick the block at slot index row.idx for this day at this time
+      // All blocks at this time for this day
       const atTime = s.days[di].filter(b => b.time === row.time);
-      const match  = atTime[row.idx];
+      // Pick the block at this row's slot index
+      let match = atTime[row.idx];
+
+      // FIX: If this slot is empty but the day has a NOC block at this time,
+      // show the NOC block in every concurrent row — it represents the full timeslot.
+      if (!match) {
+        const nocs = atTime.filter(b => b.type === 'noc');
+        if (nocs.length > 0) match = nocs[0];
+      }
+
       const blockH = match ? blockHTML(match, di, isPreview) : '';
 
       // Add-here button only on idx===0 to avoid duplicates
@@ -357,11 +412,14 @@ function renderFlyer() {
     </div>`;
 
   if (isPreview) {
-    document.getElementById('flyerWrap').innerHTML = flyerHTML;
+    document.getElementById('flyerWrap').innerHTML =
+      `<div id="zoomWrap">${flyerHTML}</div>`;
   } else {
     document.getElementById('flyerWrap').innerHTML =
-      `<div class="edit-wrap"><div class="time-ruler" id="timeRuler">${buildRuler(rows)}</div>${flyerHTML}</div>`;
+      `<div id="zoomWrap"><div class="edit-wrap"><div class="time-ruler" id="timeRuler">${buildRuler(rows)}</div>${flyerHTML}</div></div>`;
   }
+  // Re-apply zoom after re-render (zoomWrap gets recreated each time)
+  requestAnimationFrame(applyZoom);
 }
 
 // ── Ruler ──
@@ -384,8 +442,11 @@ function blockHTML(b, di, isPreview) {
     const del = !isPreview
       ? `<button class="cb-del" onclick="delBlock(event,'${b.id}',${di})"><i class="fas fa-times"></i></button>`
       : '';
-    const clickEvt = !isPreview ? `onclick="openModal({blockId:'${b.id}',di:${di}})"` : '';
-    return `<div class="cb c-noc" data-id="${b.id}" ${clickEvt}>
+    const editEvts = !isPreview
+      ? `onclick="openModal({blockId:'${b.id}',di:${di}})"
+         oncontextmenu="showCtx(event,'${b.id}',${di})"`
+      : '';
+    return `<div class="cb c-noc" data-id="${b.id}" ${editEvts}>
       ${del}
       <div class="cb-inner"><div class="noc-text">NO<br>CLASSES</div></div>
     </div>`;
@@ -897,5 +958,6 @@ function init() {
   renderSidebar();
   renderFlyer();
   updatePill();
+  // zoom label initialised by renderSidebar + applyZoom inside renderFlyer
 }
 init();
