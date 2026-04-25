@@ -19,7 +19,11 @@
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-header">
-      <div class="sb-brand">STOUTPGH</div>
+      <div class="sb-logo-wrap">
+        <img src="stoutpgh-logo.png" class="sb-logo" alt="StoutPGH"
+          onerror="this.style.display='none';document.getElementById('sbLogoFb').style.display='block'">
+        <span id="sbLogoFb" class="sb-logo-fb" style="display:none">STOUTPGH</span>
+      </div>
       <div class="sb-sub">Schedule Builder</div>
       <div class="tab-row" id="tabRow"></div>
     </div>
@@ -39,6 +43,9 @@
         </button>
       </div>
       <!-- Schedule data save / load -->
+      <button class="data-btn new-sched-btn" onclick="newSchedule()">
+        <i class="fas fa-file"></i>&nbsp; New Schedule
+      </button>
       <button class="data-btn" onclick="saveData()">
         <i class="fas fa-download"></i>&nbsp; Save Schedule (.json)
       </button>
@@ -56,8 +63,8 @@
 
 </div>
 
-<!-- Block Modal -->
-<div class="bm-overlay" id="blockModal" onclick="handleModalBackdrop(event)"></div>
+<!-- Block Modal — closes only via X, Cancel, or Save buttons -->
+<div class="bm-overlay" id="blockModal"></div>
 
 <!-- Context menu -->
 <div class="ctx-menu" id="ctxMenu"></div>

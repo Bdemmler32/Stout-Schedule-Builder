@@ -37,7 +37,9 @@ html, body {
   padding: 12px 14px 10px; background: #161616;
   border-bottom: 1px solid #252525; flex-shrink: 0;
 }
-.sb-brand { font-family: 'Russo One', sans-serif; font-size: 17px; color: #f0b429; letter-spacing: 0.06em; margin-bottom: 1px; }
+.sb-logo-wrap { margin-bottom: 2px; display: flex; align-items: center; }
+.sb-logo { height: 28px; width: auto; object-fit: contain; }
+.sb-logo-fb { font-family: 'Russo One', sans-serif; font-size: 17px; color: #f0b429; letter-spacing: 0.06em; }
 .sb-sub   { font-size: 9px; color: #555; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
 
 .tab-row { display: flex; gap: 3px; }
@@ -257,19 +259,17 @@ html, body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; width: 100%;
 }
-/* Time: Russo One (display/bold) — stays bold, it's the time stamp */
+/* Time stamp: Russo One bold display */
 .cb-time {
   font-family: 'Russo One', sans-serif; font-size: 13px;
   display: flex; align-items: center; justify-content: center;
   gap: 4px; line-height: 1.15; white-space: nowrap;
 }
 .cb-time i { font-size: 10px; }
-/* Level: Outfit regular */
-.cb-level  { font-size: 11.5px; font-weight: 400; line-height: 1.3; font-family: 'Outfit', sans-serif; }
-/* Primary discipline line: Outfit semibold (consistent across ALL types) */
-.cb-disc   { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.25; }
-/* Secondary line: Outfit regular, slightly muted */
-.cb-disc2  { font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 400; line-height: 1.2; opacity: 0.82; }
+/* #8 Block text order: time → disc (regular) → level (bold) → disc2 (italic) */
+.cb-disc   { font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 400; line-height: 1.25; }
+.cb-level  { font-family: 'Russo One', sans-serif; font-size: 13px; line-height: 1.3; }
+.cb-disc2  { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 400; font-style: italic; line-height: 1.2; opacity: 0.82; }
 
 /* NO CLASSES — transparent fill, text only */
 .noc-text {
@@ -443,22 +443,23 @@ html, body {
 }
 
 /* Coloured header strip */
+/* #9: Modal header always gold with charcoal text */
 .bm-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  transition: background 0.2s;
+  background: #f0b429;
 }
 .bm-title {
   font-family: 'Russo One', sans-serif;
   font-size: 15px;
-  color: #111;
+  color: #1e1e1e;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .bm-close {
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.2);
   border: none;
   border-radius: 50%;
   width: 28px;
@@ -467,11 +468,12 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #111;
+  color: #1e1e1e;
   font-size: 12px;
+  font-weight: 700;
   transition: background 0.15s;
 }
-.bm-close:hover { background: rgba(0,0,0,0.3); }
+.bm-close:hover { background: rgba(0,0,0,0.35); }
 
 /* Body */
 .bm-body {
@@ -586,6 +588,38 @@ html, body {
 
 /* ── DRAG GHOST ── */
 .drag-ghost-el { position: fixed; pointer-events: none; z-index: 9999; opacity: 0.88; transform: rotate(2deg) scale(1.04); box-shadow: 0 8px 30px rgba(0,0,0,0.45); border-radius: 8px; }
+
+/* #3: Flyer PDF wrapper — real white padding so html2canvas captures the border */
+.flyer-pdf-wrap {
+  background: #fff;
+  padding: 14px;
+  border-radius: 10px;
+  display: inline-block;
+  line-height: 0; /* prevent inline gap under flyer */
+}
+
+/* #1: New Schedule button — distinct from save/load */
+.new-sched-btn {
+  border-color: #555 !important;
+  color: #aaa !important;
+}
+.new-sched-btn:hover { border-color: #e05555 !important; color: #e05555 !important; }
+
+/* #8 Modal: label variant for level (bold indicator) */
+.bm-lbl-bold { color: #f0b429; }
+
+/* Modal input style variants */
+.bm-input-regular { font-weight: 400; font-style: normal; }
+.bm-input-bold    { font-weight: 700; font-style: normal; }
+.bm-input-italic  { font-weight: 400; font-style: italic; color: #aaa; }
+
+/* #5: Time input[type=time] styling to match other modal inputs */
+input[type="time"].bm-input {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color-scheme: dark;
+  cursor: pointer;
+}
 
 /* ── ZOOM CONTROLS ── */
 .zoom-row {

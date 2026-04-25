@@ -33,7 +33,27 @@ function toMins(t) {
   return h * 60 + m;
 }
 
-// FIX #1: 'noc' is now just another block type with a real time.
+// Convert stored "9:30 AM" / "10:00 PM" → "09:30" / "22:00" for input[type=time]
+function to24h(t12) {
+  if (!t12) return '06:00';
+  const [hm, ap] = t12.trim().split(' ');
+  let [h, m] = hm.split(':').map(Number);
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+// Convert "09:30" / "22:00" → "9:30 AM" / "10:00 PM" (our stored format)
+function from24h(t24) {
+  if (!t24) return TIME_SLOTS[0];
+  const [hStr, mStr] = t24.split(':');
+  let h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  // Snap to nearest half hour
+  const snappedM = m >= 15 ? 30 : 0; // round down; if >= 45 stays 30
+  const snapH = m >= 45 ? (h + 1) % 24 : h;
+  return fmtTime(snapH, snappedM);
+}
 // It renders as a grey "NO CLASSES" card in the timeline row for that time,
 // exactly like any other block. No special row, no null time.
 const TYPES = [
@@ -209,6 +229,29 @@ function initHistory() {
 // ============================================================
 // SAVE / LOAD DATA FILES
 // ============================================================
+// ============================================================
+// NEW SCHEDULE
+// ============================================================
+function newSchedule() {
+  const confirmed = confirm(
+    'Start a new schedule?\n\nThis will clear all current blocks and metadata. Your saved .json file (if any) will not be affected.'
+  );
+  if (!confirmed) return;
+  schedules = makeEmptySchedules();
+  activeTab = 0;
+  // Refresh revision to today
+  const today = new Date();
+  const todayRev = `${today.getMonth()+1}/${today.getDate()}/${String(today.getFullYear()).slice(2)}`;
+  schedules.forEach(s => { s.rev = todayRev; });
+  history = [];
+  histIdx = -1;
+  snapshot();
+  closeModal();
+  renderSidebar();
+  renderFlyer();
+  toast('New schedule started', 'ok');
+}
+
 function saveData() {
   const blob = new Blob([JSON.stringify(schedules, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -394,21 +437,23 @@ function renderFlyer() {
   </div>`;
 
   const flyerHTML = `
-    <div class="flyer ${isPreview?'preview-mode':'edit-mode'}" id="flyerEl">
-      <div class="flyer-header">
-        <div class="hdr-main">
-          ${logoHTML}
-          <span class="hdr-loc">${esc(s.location)}</span>
-          <span class="hdr-type">${s.location && s.stype ? '&nbsp;' : ''}${esc(s.stype)}</span>
+    <div class="flyer-pdf-wrap">
+      <div class="flyer ${isPreview?'preview-mode':'edit-mode'}" id="flyerEl">
+        <div class="flyer-header">
+          <div class="hdr-main">
+            ${logoHTML}
+            <span class="hdr-loc">${esc(s.location)}</span>
+            <span class="hdr-type">${s.location && s.stype ? '&nbsp;' : ''}${esc(s.stype)}</span>
+          </div>
+          <div class="hdr-rev">REVISION<br><strong>${esc(s.rev)}</strong></div>
         </div>
-        <div class="hdr-rev">REVISION<br><strong>${esc(s.rev)}</strong></div>
-      </div>
-      <div class="day-headers">${DAYS.map(d=>`<div class="day-hdr-cell">${d}</div>`).join('')}</div>
-      <div class="sched-body" id="schedBody">${bodyHTML}</div>
-      <div class="flyer-footer">
-        <div class="ftr-item"><i class="fas fa-map-marker-alt"></i><span>${esc(s.addr)}</span></div>
-        <div class="ftr-item"><i class="fas fa-phone-square"></i><span>${esc(s.phone)}</span></div>
-        <div class="ftr-item"><i class="fas fa-globe"></i><span>${esc(s.web)}</span></div>
+        <div class="day-headers">${DAYS.map(d=>`<div class="day-hdr-cell">${d}</div>`).join('')}</div>
+        <div class="sched-body" id="schedBody">${bodyHTML}</div>
+        <div class="flyer-footer">
+          <div class="ftr-item"><i class="fas fa-map-marker-alt"></i><span>${esc(s.addr)}</span></div>
+          <div class="ftr-item"><i class="fas fa-phone-square"></i><span>${esc(s.phone)}</span></div>
+          <div class="ftr-item"><i class="fas fa-globe"></i><span>${esc(s.web)}</span></div>
+        </div>
       </div>
     </div>`;
 
@@ -421,6 +466,30 @@ function renderFlyer() {
   }
   // Re-apply zoom after re-render (zoomWrap gets recreated each time)
   requestAnimationFrame(applyZoom);
+
+  // #10: In preview mode, auto-scale block text if rows overflow the fixed 816px height
+  if (isPreview) {
+    requestAnimationFrame(() => {
+      const body = document.getElementById('schedBody');
+      const flyerEl = document.getElementById('flyerEl');
+      if (!body || !flyerEl) return;
+      // Available height for sched-body = flyer height - header - day-headers - footer
+      const available = flyerEl.clientHeight - 62 - 34 - 44; // px
+      let scale = 1.0;
+      const step = 0.05;
+      while (body.scrollHeight > available + 2 && scale > 0.4) {
+        scale = Math.round((scale - step) * 100) / 100;
+        body.style.setProperty('--cb-scale', scale);
+        // Force font-size on all cb-inner children
+        body.querySelectorAll('.cb-inner').forEach(el => {
+          el.style.fontSize = `${scale}em`;
+        });
+        body.querySelectorAll('.cb-time, .cb-disc, .cb-level, .cb-disc2, .noc-text').forEach(el => {
+          el.style.fontSize = '';
+        });
+      }
+    });
+  }
 }
 
 // ── Ruler ──
@@ -468,8 +537,8 @@ function blockHTML(b, di, isPreview) {
     ${del}
     <div class="cb-inner">
       <div class="cb-time"><i class="far fa-clock"></i>&nbsp;${esc(b.time)}</div>
+      ${b.disc  ? `<div class="cb-disc">${esc(b.disc)}</div>`   : ''}
       ${b.level ? `<div class="cb-level">${esc(b.level)}</div>` : ''}
-      <div class="cb-disc">${esc(b.disc)}</div>
       ${b.disc2 ? `<div class="cb-disc2">${esc(b.disc2)}</div>` : ''}
     </div>
   </div>`;
@@ -515,15 +584,21 @@ function openModal(opts = {}) {
 
   const { blockId = null, di = 0, time = null } = opts;
   _modalBlockId = blockId;
-  _modalDi      = blockId ? di : null; // for editing
+  _modalDi      = blockId ? di : null;
 
   const isEdit  = !!blockId;
   const block   = isEdit ? sch().days[di].find(b => b.id === blockId) : null;
 
-  // Build option lists
-  const timeOpts = TIME_SLOTS.map(t =>
-    `<option value="${t}" ${(block?.time || time || TIME_SLOTS[0]) === t ? 'selected' : ''}>${t}</option>`
-  ).join('');
+  // #5: 24h time input — convert stored 12h time to HH:MM for input[type=time]
+  const currentTime12 = block?.time || time || TIME_SLOTS[0];
+  const currentTime24 = to24h(currentTime12);
+
+  // Datalist of all half-hour slots in 24h format for snap suggestions
+  const datalistId = 'bm-time-list';
+  const datalistHTML = `<datalist id="${datalistId}">
+    ${TIME_SLOTS.map(t => `<option value="${to24h(t)}">`).join('')}
+  </datalist>`;
+
   const dayOpts = DAYS.map((d, i) =>
     `<option value="${i}" ${(block ? di : di) === i ? 'selected' : ''}>${d}</option>`
   ).join('');
@@ -531,14 +606,11 @@ function openModal(opts = {}) {
     `<option value="${t.id}" ${(block?.type || 'bjj') === t.id ? 'selected' : ''}>${t.label}</option>`
   ).join('');
 
-  // Color strip based on current type
-  const currentType = block?.type || 'bjj';
-  const T = TYPES.find(t => t.id === currentType) || TYPES[0];
-
   const overlay = document.getElementById('blockModal');
   overlay.innerHTML = `
     <div class="bm-dialog" role="dialog" aria-modal="true">
-      <div class="bm-header" id="bmHeader" style="background:${T.color}">
+      <!-- #9: Always gold header with charcoal text -->
+      <div class="bm-header" id="bmHeader">
         <div class="bm-title">${isEdit ? 'Edit Block' : 'Add Block'}</div>
         <button class="bm-close" onclick="closeModal()" title="Close">
           <i class="fas fa-times"></i>
@@ -552,24 +624,29 @@ function openModal(opts = {}) {
           </div>
           <div class="bm-field">
             <label class="bm-lbl">Time</label>
-            <select class="bm-select" id="bm-time">${timeOpts}</select>
+            ${datalistHTML}
+            <input class="bm-input" type="time" id="bm-time"
+              value="${currentTime24}"
+              list="${datalistId}"
+              step="1800">
           </div>
         </div>
         <div class="bm-field">
           <label class="bm-lbl">Type / Color</label>
           <select class="bm-select bm-type-select" id="bm-type" onchange="updateModalHeader(this.value)">${typeOpts}</select>
         </div>
-        <div class="bm-field" id="bm-field-level">
-          <label class="bm-lbl">Level / Label <span class="bm-opt">optional</span></label>
-          <input class="bm-input" id="bm-level" placeholder="e.g. Fundamentals" value="${esc(block?.level || '')}">
-        </div>
+        <!-- #8: Reordered — Primary Line first (not bold), then Level/Label (bold), then Secondary (italic) -->
         <div class="bm-field" id="bm-field-disc">
-          <label class="bm-lbl">Primary Line</label>
-          <input class="bm-input" id="bm-disc" placeholder="e.g. Gi - Adult BJJ" value="${esc(block?.disc || '')}">
+          <label class="bm-lbl">Primary Line <span class="bm-opt">e.g. Adult BJJ</span></label>
+          <input class="bm-input bm-input-regular" id="bm-disc" placeholder="e.g. Gi - Adult BJJ" value="${esc(block?.disc || '')}">
+        </div>
+        <div class="bm-field" id="bm-field-level">
+          <label class="bm-lbl bm-lbl-bold">Level / Label</label>
+          <input class="bm-input bm-input-bold" id="bm-level" placeholder="e.g. Fundamentals" value="${esc(block?.level || '')}">
         </div>
         <div class="bm-field" id="bm-field-disc2">
           <label class="bm-lbl">Secondary Line <span class="bm-opt">optional</span></label>
-          <input class="bm-input" id="bm-disc2" placeholder="e.g. Adult MMA" value="${esc(block?.disc2 || '')}">
+          <input class="bm-input bm-input-italic" id="bm-disc2" placeholder="e.g. Invite Only" value="${esc(block?.disc2 || '')}">
         </div>
       </div>
       <div class="bm-footer">
@@ -582,19 +659,16 @@ function openModal(opts = {}) {
     </div>`;
 
   overlay.classList.add('open');
-  // Focus first meaningful field
   setTimeout(() => {
     const firstInput = overlay.querySelector(block?.type === 'noc' ? '#bm-day' : '#bm-disc');
     firstInput?.focus();
-    // Hide primary/secondary for noc type
     toggleNocFields(block?.type || 'bjj');
   }, 50);
 }
 
 function updateModalHeader(typeId) {
-  const T = TYPES.find(t => t.id === typeId) || TYPES[0];
-  const hdr = document.getElementById('bmHeader');
-  if (hdr) hdr.style.background = T.color;
+  // Header is always gold — no background change needed
+  // Just toggle noc fields visibility
   toggleNocFields(typeId);
 }
 
@@ -614,18 +688,14 @@ function closeModal() {
   _modalDi      = null;
 }
 
-function handleModalBackdrop(e) {
-  // Close only if clicking the dark overlay itself, not the dialog inside it
-  if (e.target === document.getElementById('blockModal')) closeModal();
-}
-
 function modalSave(defaultDi) {
   const di    = +document.getElementById('bm-day').value;
-  const time  =  document.getElementById('bm-time').value;
+  const time24 = document.getElementById('bm-time').value;
+  const time  = time24 ? from24h(time24) : TIME_SLOTS[0];
   const type  =  document.getElementById('bm-type').value;
-  const level =  document.getElementById('bm-level')?.value.trim() || '';
-  const disc  =  document.getElementById('bm-disc')?.value.trim()  || '';
-  const disc2 =  document.getElementById('bm-disc2')?.value.trim() || '';
+  const level =  document.getElementById('bm-level')?.value.trim()  || '';
+  const disc  =  document.getElementById('bm-disc')?.value.trim()   || '';
+  const disc2 =  document.getElementById('bm-disc2')?.value.trim()  || '';
 
   if (_modalBlockId) {
     // Edit existing
@@ -831,10 +901,11 @@ async function captureSchedule(tabIndex) {
   activeTab = tabIndex;
   mode      = 'preview';
   renderFlyer();
-  await new Promise(r => setTimeout(r, 150)); // let layout + fonts settle
+  await new Promise(r => setTimeout(r, 200));
 
-  const flyer = document.getElementById('flyerEl');
-  const canvas = await html2canvas(flyer, {
+  // Capture the wrapper that includes the white border padding
+  const target = document.querySelector('.flyer-pdf-wrap') || document.getElementById('flyerEl');
+  const canvas = await html2canvas(target, {
     scale: 2,
     useCORS: true,
     allowTaint: true,
@@ -842,7 +913,6 @@ async function captureSchedule(tabIndex) {
     logging: false,
   });
 
-  // Restore
   activeTab = prevTab;
   mode      = prevMode;
   renderFlyer();
@@ -866,13 +936,13 @@ async function exportPDF() {
     await new Promise(r => setTimeout(r, 150));
   }
 
-  const flyer = document.getElementById('flyerEl');
-  if (!flyer) { toast('No flyer to export', 'warn'); return; }
+  const target = document.querySelector('.flyer-pdf-wrap') || document.getElementById('flyerEl');
+  if (!target) { toast('No flyer to export', 'warn'); return; }
 
   toast('Generating PDF…', '');
 
   try {
-    const canvas = await html2canvas(flyer, {
+    const canvas = await html2canvas(target, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
@@ -943,7 +1013,6 @@ async function exportAllPDF() {
 // ============================================================
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
-  if (e.key === 'Escape') closeModal();
   if (drag && (e.altKey || e.metaKey)) isDuplicate = true;
 });
 document.addEventListener('keyup', e => {
@@ -956,9 +1025,13 @@ document.addEventListener('click', hideCtx);
 // ============================================================
 function init() {
   initHistory();
+  // #7: Always refresh revision date to today on open
+  const today = new Date();
+  const todayRev = `${today.getMonth()+1}/${today.getDate()}/${String(today.getFullYear()).slice(2)}`;
+  schedules.forEach(s => { s.rev = todayRev; });
+  saveToStorage();
   renderSidebar();
   renderFlyer();
   updatePill();
-  // zoom label initialised by renderSidebar + applyZoom inside renderFlyer
 }
 init();
