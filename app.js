@@ -51,9 +51,9 @@ function to24h(t12) {
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-// Convert "09:30" / "06:45" → "9:30 AM" / "6:45 AM" — NO snapping, any time allowed
+// Convert "09:30" / "10:45" → "9:30 AM" / "10:45 AM" — exact, no snapping
 function from24h(t24) {
-  if (!t24) return '6:00 AM';
+  if (!t24) return DEFAULT_TIME;
   const [hStr, mStr] = t24.split(':');
   const h = parseInt(hStr, 10);
   const m = parseInt(mStr, 10);
