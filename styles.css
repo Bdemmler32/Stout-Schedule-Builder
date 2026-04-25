@@ -17,11 +17,22 @@ html, body {
 
 /* ── SIDEBAR ── */
 .sidebar {
-  width: 262px; min-width: 262px;
-  background: #1e1e1e; border-right: 1px solid #2a2a2a;
-  display: flex; flex-direction: column; overflow: hidden;
-  z-index: 10; flex-shrink: 0;
+  width: 262px;
+  min-width: 262px;
+  background: #1e1e1e;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;   /* whole sidebar scrolls if content taller than viewport */
+  overflow-x: hidden;
+  z-index: 10;
+  flex-shrink: 0;
 }
+/* Scrollbar for sidebar */
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: #161616; }
+.sidebar::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 2px; }
+.sidebar::-webkit-scrollbar-thumb:hover { background: #555; }
 .sb-header {
   padding: 12px 14px 10px; background: #161616;
   border-bottom: 1px solid #252525; flex-shrink: 0;
@@ -38,9 +49,9 @@ html, body {
 .tab-btn:hover { color: #aaa; border-color: #3a3a3a; }
 .tab-btn.active { background: #f0b429; border-color: #f0b429; color: #111; }
 
-.sb-body { flex: 1; overflow-y: auto; padding: 12px; }
-.sb-body::-webkit-scrollbar { width: 3px; }
-.sb-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.sb-body { flex: 1; padding: 12px; }
+
+.sb-footer { padding: 10px 12px; border-top: 1px solid #222; display: flex; flex-direction: column; gap: 5px; }
 
 .field-group { margin-bottom: 9px; }
 .lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #555; margin-bottom: 3px; display: block; }
@@ -68,10 +79,6 @@ html, body {
 }
 .action-btn:hover { color: #bbb; border-color: #3a3a3a; }
 .action-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
-
-/* fselect/fminput kept for any legacy use but primarily modal handles inputs now */
-
-.sb-footer { padding: 10px 12px; border-top: 1px solid #222; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
 .data-btn {
   width: 100%; padding: 7px; background: transparent; border: 1px solid #333; border-radius: 5px;
   color: #777; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif;
@@ -292,6 +299,12 @@ html, body {
 .c-youth .cb-level { color: #227832; }
 .c-youth .cb-disc  { color: #145520; }
 .c-youth .cb-disc2 { color: #1c6228; }
+/* Self Defense — warm yellow */
+.c-selfdef  { background: #fffbe6; }
+.c-selfdef .cb-time  { color: #7a5c00; }
+.c-selfdef .cb-level { color: #8a6a00; }
+.c-selfdef .cb-disc  { color: #5c4400; }
+.c-selfdef .cb-disc2 { color: #6e5200; }
 /* No Classes — transparent, just text */
 .c-noc { background: transparent !important; border-radius: 0; }
 

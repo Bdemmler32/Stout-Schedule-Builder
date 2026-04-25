@@ -37,11 +37,12 @@ function toMins(t) {
 // It renders as a grey "NO CLASSES" card in the timeline row for that time,
 // exactly like any other block. No special row, no null time.
 const TYPES = [
-  { id: 'bjj',      label: 'BJJ (Gi / No Gi)',  cls: 'c-bjj',      color: '#ddeeff' },
-  { id: 'mma',      label: 'MMA',               cls: 'c-mma',      color: '#ede8f8' },
-  { id: 'striking', label: 'Striking / Boxing', cls: 'c-striking', color: '#fce8ec' },
-  { id: 'youth',    label: 'Youth BJJ',          cls: 'c-youth',    color: '#e4f5e4' },
-  { id: 'noc',      label: 'No Classes',         cls: 'c-noc',      color: '#f0f0f0' },
+  { id: 'bjj',       label: 'BJJ (Gi / No Gi)',   cls: 'c-bjj',       color: '#ddeeff' },
+  { id: 'mma',       label: 'MMA',                cls: 'c-mma',       color: '#ede8f8' },
+  { id: 'striking',  label: 'Striking / Boxing',  cls: 'c-striking',  color: '#fce8ec' },
+  { id: 'youth',     label: 'Youth BJJ',           cls: 'c-youth',     color: '#e4f5e4' },
+  { id: 'selfdef',   label: 'Self Defense',        cls: 'c-selfdef',   color: '#fffbe6' },
+  { id: 'noc',       label: 'No Classes',          cls: 'c-noc',       color: '#f0f0f0' },
 ];
 
 // Each time-row in edit mode = SLOT_H * 2 px (one full hour block).
@@ -775,11 +776,11 @@ function hideCtx() { document.getElementById('ctxMenu').style.display = 'none'; 
 function shortType(stype) {
   const t = (stype || '').toUpperCase();
   if (t.includes('BJJ') && t.includes('YOUTH')) return 'Youth';
-  if (t.includes('YOUTH'))    return 'Youth';
-  if (t.includes('STRIKING')) return 'Striking';
-  if (t.includes('BJJ'))      return 'BJJ';
-  if (t.includes('MMA'))      return 'MMA';
-  // Fallback: take first word
+  if (t.includes('YOUTH'))       return 'Youth';
+  if (t.includes('STRIKING'))    return 'Striking';
+  if (t.includes('SELF'))        return 'SelfDefense';
+  if (t.includes('BJJ'))         return 'BJJ';
+  if (t.includes('MMA'))         return 'MMA';
   return (stype || 'Schedule').split(' ')[0];
 }
 
