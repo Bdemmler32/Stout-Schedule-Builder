@@ -73,17 +73,6 @@ function to24h(t12) {
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-// Convert "09:30" / "22:00" → "9:30 AM" / "10:00 PM" (our stored format)
-function from24h(t24) {
-  if (!t24) return TIME_SLOTS[0];
-  const [hStr, mStr] = t24.split(':');
-  let h = parseInt(hStr, 10);
-  const m = parseInt(mStr, 10);
-  // Snap to nearest half hour
-  const snappedM = m >= 15 ? 30 : 0; // round down; if >= 45 stays 30
-  const snapH = m >= 45 ? (h + 1) % 24 : h;
-  return fmtTime(snapH, snappedM);
-}
 // It renders as a grey "NO CLASSES" card in the timeline row for that time,
 // exactly like any other block. No special row, no null time.
 const TYPES = [
@@ -722,7 +711,7 @@ function closeModal() {
 function modalSave(defaultDi) {
   const di    = +document.getElementById('bm-day').value;
   const time24 = document.getElementById('bm-time').value;
-  const time  = time24 ? from24h(time24) : TIME_SLOTS[0];
+  const time  = time24 ? from24h(time24) : DEFAULT_TIME;
   const type  =  document.getElementById('bm-type').value;
   const level =  document.getElementById('bm-level')?.value.trim()  || '';
   const disc  =  document.getElementById('bm-disc')?.value.trim()   || '';
