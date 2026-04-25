@@ -8,30 +8,60 @@
 // ============================================================
 const DAYS = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
 
-// Half-hour slots 6:00 AM – 10:00 PM
-const TIME_SLOTS = (() => {
-  const s = [];
-  for (let h = 6; h <= 22; h++) {
-    s.push(fmtTime(h, 0));
-    if (h < 22) s.push(fmtTime(h, 30));
-  }
-  return s;
-})();
+// ============================================================
+// TIME HELPERS
+// ============================================================
 
+// Convert 24h integers to "H:MM AM/PM" display format
 function fmtTime(h, m) {
   const ap = h < 12 ? 'AM' : 'PM';
   const hh = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${hh}:${m === 0 ? '00' : '30'} ${ap}`;
+  return `${hh}:${String(m).padStart(2,'0')} ${ap}`;
 }
 
 function toMins(t) {
   if (!t) return -1;
-  const [hm, ap] = t.split(' ');
+  const [hm, ap] = t.trim().split(' ');
   let [h, m] = hm.split(':').map(Number);
   if (ap === 'PM' && h !== 12) h += 12;
   if (ap === 'AM' && h === 12) h = 0;
   return h * 60 + m;
 }
+
+// Returns the start-of-hour in minutes for a given minute value
+// e.g. 6:30 AM = 390 mins → bucket 360 (6:00 AM)
+//      6:45 AM = 405 mins → bucket 360 (6:00 AM)
+function toHourBucket(mins) {
+  return Math.floor(mins / 60) * 60;
+}
+
+// Display label for a bucket (minutes since midnight)
+function bucketLabel(bucketMins) {
+  const h = Math.floor(bucketMins / 60);
+  return fmtTime(h, 0);
+}
+
+// Convert stored "9:30 AM" → "09:30" for input[type=time]
+function to24h(t12) {
+  if (!t12) return '06:00';
+  const [hm, ap] = t12.trim().split(' ');
+  let [h, m] = hm.split(':').map(Number);
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+// Convert "09:30" / "06:45" → "9:30 AM" / "6:45 AM" — NO snapping, any time allowed
+function from24h(t24) {
+  if (!t24) return '6:00 AM';
+  const [hStr, mStr] = t24.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  return fmtTime(h, m);
+}
+
+// Default fallback time for new blocks
+const DEFAULT_TIME = '6:00 AM';
 
 // Convert stored "9:30 AM" / "10:00 PM" → "09:30" / "22:00" for input[type=time]
 function to24h(t12) {
@@ -78,7 +108,7 @@ function uid() { return Math.random().toString(36).slice(2, 9); }
 
 // All blocks (including noc) have a time now.
 function mkBlock(time, level, disc, disc2, type) {
-  return { id: uid(), time: time || TIME_SLOTS[0], level: level||'', disc: disc||'', disc2: disc2||'', type };
+  return { id: uid(), time: time || DEFAULT_TIME, level: level||'', disc: disc||'', disc2: disc2||'', type };
 }
 
 function esc(s) {
@@ -150,7 +180,7 @@ function loadFromStorage() {
     if (!Array.isArray(data) || !data[0]?.days) return null;
     // Migrate any legacy noc blocks that have null time
     data.forEach(s => s.days.forEach(day => day.forEach(b => {
-      if (b.type === 'noc' && !b.time) b.time = TIME_SLOTS[0];
+      if (b.type === 'noc' && !b.time) b.time = DEFAULT_TIME;
     })));
     return data;
   } catch(e) { return null; }
@@ -271,9 +301,9 @@ function loadData() {
       try {
         const data = JSON.parse(ev.target.result);
         if (!Array.isArray(data) || !data[0]?.days) throw new Error('Invalid format');
-        // Migrate legacy noc blocks
+        // Migrate legacy noc blocks with null time
         data.forEach(s => s.days.forEach(day => day.forEach(b => {
-          if (b.type === 'noc' && !b.time) b.time = TIME_SLOTS[0];
+          if (b.type === 'noc' && !b.time) b.time = DEFAULT_TIME;
         })));
         schedules = data;
         activeTab = 0;
@@ -289,32 +319,39 @@ function loadData() {
 }
 
 // ============================================================
-// ROW COMPUTATION  (FIX #1)
-// All blocks (including noc) have a real time and go in the
-// normal timeline. One row per unique time, with duplicate rows
-// for concurrent blocks (same time, multiple blocks in a day).
-// NO special noc-row logic.
+// ROW COMPUTATION
+// Groups blocks into hour buckets (6:00, 7:00, 8:00...).
+// All blocks starting within the same clock-hour share one row.
+// Thursday 6:45 AM and Friday 6:30 AM → same row, different columns.
+// Multiple blocks in the same hour on the SAME day → stacked rows
+// (concurrent slots), same as before.
+//
+// Each row descriptor: { bucket: <mins>, idx: <concurrentSlot> }
 // ============================================================
 function getRows(s) {
-  const timeCount = {}; // time → max concurrent block count across all days
+  // bucket (start-of-hour mins) → max concurrent block count across all days
+  const bucketCount = {};
 
   s.days.forEach(day => {
-    const byTime = {};
+    // Group this day's blocks by hour bucket, count per bucket
+    const byBucket = {};
     day.forEach(b => {
       if (!b.time) return;
-      byTime[b.time] = (byTime[b.time] || 0) + 1;
+      const bucket = toHourBucket(toMins(b.time));
+      byBucket[bucket] = (byBucket[bucket] || 0) + 1;
     });
-    Object.entries(byTime).forEach(([t, count]) => {
-      timeCount[t] = Math.max(timeCount[t] || 0, count);
+    Object.entries(byBucket).forEach(([bucket, count]) => {
+      const bNum = Number(bucket);
+      bucketCount[bNum] = Math.max(bucketCount[bNum] || 0, count);
     });
   });
 
-  const times = Object.keys(timeCount).sort((a,b) => toMins(a) - toMins(b));
+  const buckets = Object.keys(bucketCount).map(Number).sort((a, b) => a - b);
   const rows = [];
-  times.forEach(t => {
-    const n = timeCount[t];
+  buckets.forEach(bucket => {
+    const n = bucketCount[bucket];
     for (let idx = 0; idx < n; idx++) {
-      rows.push({ time: t, idx });
+      rows.push({ bucket, idx });
     }
   });
   return rows;
@@ -390,32 +427,35 @@ function renderFlyer() {
   let bodyHTML = '';
 
   rows.forEach((row, ri) => {
-    const bg       = ri % 2 === 0 ? '#fff' : '#f5f5f5';
-    const rowH     = SLOT_H * 2;
-    const hAttr    = !isPreview ? `style="height:${rowH}px;background:${bg}"` : `style="background:${bg}"`;
+    const bg    = ri % 2 === 0 ? '#fff' : '#f5f5f5';
+    const rowH  = SLOT_H * 2;
+    const hAttr = !isPreview ? `style="height:${rowH}px;background:${bg}"` : `style="background:${bg}"`;
 
     let cells = '';
     DAYS.forEach((_, di) => {
-      // All blocks at this time for this day
-      const atTime = s.days[di].filter(b => b.time === row.time);
-      // Pick the block at this row's slot index
-      let match = atTime[row.idx];
+      // All blocks in this hour bucket for this day, sorted by time
+      const inBucket = s.days[di]
+        .filter(b => b.time && toHourBucket(toMins(b.time)) === row.bucket)
+        .sort((a, b) => toMins(a.time) - toMins(b.time));
 
-      // FIX: If this slot is empty but the day has a NOC block at this time,
-      // show the NOC block in every concurrent row — it represents the full timeslot.
+      // Pick the block at this concurrent slot index
+      let match = inBucket[row.idx];
+
+      // NOC repeat: if slot is empty but day has a noc in this bucket, show it in every row
       if (!match) {
-        const nocs = atTime.filter(b => b.type === 'noc');
-        if (nocs.length > 0) match = nocs[0];
+        const noc = inBucket.find(b => b.type === 'noc');
+        if (noc) match = noc;
       }
 
       const blockH = match ? blockHTML(match, di, isPreview) : '';
 
-      // Add-here button only on idx===0 to avoid duplicates
+      // Add-here: only on idx===0, pre-fills modal with the bucket's hour
+      const bucketTimeStr = bucketLabel(row.bucket);
       const addBtn = (!isPreview && row.idx === 0)
-        ? `<button class="add-here" onclick="openModal({di:${di},time:'${row.time}'})">+</button>`
+        ? `<button class="add-here" onclick="openModal({di:${di},time:'${bucketTimeStr}'})">+</button>`
         : '';
-      const dropA  = !isPreview
-        ? `ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,${di},'${row.time}')"`
+      const dropA = !isPreview
+        ? `ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,${di},null)"`
         : '';
 
       cells += `<div class="day-cell" ${dropA}>${blockH}${addBtn}</div>`;
@@ -497,7 +537,8 @@ function buildRuler(rows) {
   let html = `<div class="ruler-hdr-spacer"></div><div class="ruler-day-spacer">TIME</div>`;
   rows.forEach(row => {
     const h     = SLOT_H * 2;
-    const label = row.idx === 0 ? row.time : '·';
+    // Show hour label only on first concurrent slot of each bucket
+    const label = row.idx === 0 ? bucketLabel(row.bucket) : '·';
     const dim   = row.idx > 0 ? ' style="color:#2e2e2e"' : '';
     html += `<div class="ruler-cell" style="height:${h}px"${dim}>${label}</div>`;
   });
@@ -589,15 +630,9 @@ function openModal(opts = {}) {
   const isEdit  = !!blockId;
   const block   = isEdit ? sch().days[di].find(b => b.id === blockId) : null;
 
-  // #5: 24h time input — convert stored 12h time to HH:MM for input[type=time]
-  const currentTime12 = block?.time || time || TIME_SLOTS[0];
+  // Convert stored 12h time to HH:MM for input[type=time]
+  const currentTime12 = block?.time || time || DEFAULT_TIME;
   const currentTime24 = to24h(currentTime12);
-
-  // Datalist of all half-hour slots in 24h format for snap suggestions
-  const datalistId = 'bm-time-list';
-  const datalistHTML = `<datalist id="${datalistId}">
-    ${TIME_SLOTS.map(t => `<option value="${to24h(t)}">`).join('')}
-  </datalist>`;
 
   const dayOpts = DAYS.map((d, i) =>
     `<option value="${i}" ${(block ? di : di) === i ? 'selected' : ''}>${d}</option>`
@@ -624,11 +659,7 @@ function openModal(opts = {}) {
           </div>
           <div class="bm-field">
             <label class="bm-lbl">Time</label>
-            ${datalistHTML}
-            <input class="bm-input" type="time" id="bm-time"
-              value="${currentTime24}"
-              list="${datalistId}"
-              step="1800">
+            <input class="bm-input" type="time" id="bm-time" value="${currentTime24}">
           </div>
         </div>
         <div class="bm-field">
@@ -791,7 +822,7 @@ function onDragOver(e) {
   e.currentTarget.classList.add('droptgt');
 }
 function onDragLeave(e) { e.currentTarget.classList.remove('droptgt'); }
-function onDrop(e, toDi, toTime) {
+function onDrop(e, toDi, _unusedTime) {
   e.preventDefault();
   e.currentTarget.classList.remove('droptgt');
   if (!drag || mode !== 'edit') return;
@@ -802,12 +833,12 @@ function onDrop(e, toDi, toTime) {
   snapshot();
   if (isDuplicate) {
     const copy = { ...JSON.parse(JSON.stringify(s.days[fromDi][idx])), id: uid() };
-    copy.time = toTime;
+    // Keep original time — just copy to new day
     s.days[toDi].push(copy);
     toast('Duplicated (Alt+drag)', 'ok');
   } else {
     const block = s.days[fromDi].splice(idx, 1)[0];
-    block.time = toTime;
+    // Keep block's exact time — only day changes on drag
     s.days[toDi].push(block);
   }
   sortDay(toDi);
