@@ -161,6 +161,16 @@ function saveToStorage() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(schedules)); } catch(e) {}
 }
 
+// Explicit user-triggered save — writes everything to localStorage and confirms
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(schedules));
+    toast('Saved to browser \u2713', 'ok');
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'warn');
+  }
+}
+
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(LS_KEY);

@@ -81,6 +81,28 @@ html, body {
 }
 .action-btn:hover { color: #bbb; border-color: #3a3a3a; }
 .action-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+/* Manual save-to-browser button — primary action in footer */
+.save-local-btn {
+  width: 100%;
+  padding: 10px;
+  background: #1a1a1a;
+  border: 1.5px solid #f0b429;
+  border-radius: 6px;
+  color: #f0b429;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.save-local-btn:hover { background: #f0b429; color: #111; }
+
 .data-btn {
   width: 100%; padding: 7px; background: transparent; border: 1px solid #333; border-radius: 5px;
   color: #777; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif;
