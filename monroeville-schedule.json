@@ -1,0 +1,510 @@
+[
+  {
+    "id": 0,
+    "tab": "Adult BJJ",
+    "location": "MONROEVILLE/EAST",
+    "stype": "ADULT BJJ SCHEDULE",
+    "rev": "4/28/26",
+    "addr": "1 Racquet Lane | Monroeville, PA 15146",
+    "phone": "(412)-551-8119",
+    "web": "www.StoutPGH.com",
+    "days": [
+      [
+        {
+          "id": "i4i03g7",
+          "time": "9:00 AM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "i672khl",
+          "time": "10:00 AM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "rkw9e2v",
+          "time": "12:00 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "7rp5j7o",
+          "time": "5:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "d5cxqb0",
+          "time": "6:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "zhxquyo",
+          "time": "7:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        }
+      ],
+      [
+        {
+          "id": "7l0l0t6",
+          "time": "12:00 PM",
+          "level": "All Levels",
+          "disc": "Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "5sp7tnf",
+          "time": "5:30 PM",
+          "level": "Fundamentals",
+          "disc": "Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "p1l5m1u",
+          "time": "6:30 PM",
+          "level": "Intermediate",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "yp474vq",
+          "time": "7:30 PM",
+          "level": "Open Mat",
+          "disc": "Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "qr7eayq",
+          "time": "7:30 PM",
+          "level": "MMA Techniques",
+          "disc": "Adult MMA",
+          "disc2": "",
+          "type": "mma"
+        }
+      ],
+      [
+        {
+          "id": "3p5mvg1",
+          "time": "5:30 PM",
+          "level": "Fundamentals",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "qfukeas",
+          "time": "6:30 PM",
+          "level": "Intermediate",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "nnnansg",
+          "time": "7:30 PM",
+          "level": "Open Mat",
+          "disc": "Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        }
+      ],
+      [
+        {
+          "id": "kbva43g",
+          "time": "12:00 PM",
+          "level": "All Levels",
+          "disc": "No Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "wnxecxc",
+          "time": "5:30 PM",
+          "level": "Fundamentals",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "nijeh8r",
+          "time": "6:30 PM",
+          "level": "Advanced",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "fwo899c",
+          "time": "7:30 PM",
+          "level": "Open Mat",
+          "disc": "Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "bpthc4n",
+          "time": "7:30 PM",
+          "level": "MMA Techniques",
+          "disc": "Adult MMA",
+          "disc2": "",
+          "type": "mma"
+        }
+      ],
+      [
+        {
+          "id": "ax1n2wu",
+          "time": "5:30 PM",
+          "level": "Intermediate",
+          "disc": "Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "fih6iw4",
+          "time": "6:30 PM",
+          "level": "Open Mat",
+          "disc": "Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        }
+      ],
+      [
+        {
+          "id": "hoqz0oj",
+          "time": "12:00 PM",
+          "level": "All Levels",
+          "disc": "No Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "f2csouj",
+          "time": "5:30 PM",
+          "level": "Fundamentals",
+          "disc": "Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "knmikxy",
+          "time": "6:30 PM",
+          "level": "Comp. Practice",
+          "disc": "No Gi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        }
+      ],
+      [
+        {
+          "id": "vyo3u3v",
+          "time": "9:00 AM",
+          "level": "Open Mat",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        },
+        {
+          "id": "he9vt9s",
+          "time": "10:00 AM",
+          "level": "Fundamentals",
+          "disc": "NoGi - Adult BJJ",
+          "disc2": "",
+          "type": "bjj"
+        }
+      ]
+    ]
+  },
+  {
+    "id": 1,
+    "tab": "Striking",
+    "location": "MONROEVILLE/EAST",
+    "stype": "ADULT STRIKING SCHEDULE",
+    "rev": "4/28/26",
+    "addr": "1 Racquet Lane | Monroeville, PA 15146",
+    "phone": "(412)-551-8119",
+    "web": "www.StoutPGH.com",
+    "days": [
+      [
+        {
+          "id": "id1s7ev",
+          "time": "11:00 AM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "ixu0fzb",
+          "time": "12:00 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "ylprpm1",
+          "time": "5:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "y0uoi3a",
+          "time": "6:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "kly8sb6",
+          "time": "7:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        }
+      ],
+      [
+        {
+          "id": "fuljv8h",
+          "time": "12:00 PM",
+          "level": "All Levels",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "0ywrbur",
+          "time": "6:30 PM",
+          "level": "Fundamentals",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "kt44d7z",
+          "time": "6:30 PM",
+          "level": "Intermediate",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "92j5pjl",
+          "time": "7:30 PM",
+          "level": "MMA Techniques",
+          "disc": "Adult MMA",
+          "disc2": "",
+          "type": "mma"
+        }
+      ],
+      [
+        {
+          "id": "iw2r2z3",
+          "time": "5:30 PM",
+          "level": "Boxing",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "l01ixgt",
+          "time": "6:30 PM",
+          "level": "Intermediate",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        }
+      ],
+      [
+        {
+          "id": "ydrzwkm",
+          "time": "5:30 PM",
+          "level": "Boxing",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "7mqlpap",
+          "time": "6:30 PM",
+          "level": "Fundamentals",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "eiwd41f",
+          "time": "7:30 PM",
+          "level": "MMA Techniques",
+          "disc": "Adult MMA",
+          "disc2": "",
+          "type": "mma"
+        }
+      ],
+      [
+        {
+          "id": "s30kheg",
+          "time": "6:30 PM",
+          "level": "Intermediate",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        }
+      ],
+      [
+        {
+          "id": "hloiqeg",
+          "time": "12:00 PM",
+          "level": "All Levels",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        }
+      ],
+      [
+        {
+          "id": "mrhxot0",
+          "time": "11:00 AM",
+          "level": "All Levels",
+          "disc": "Adult Striking",
+          "disc2": "",
+          "type": "striking"
+        }
+      ]
+    ]
+  },
+  {
+    "id": 2,
+    "tab": "Youth BJJ",
+    "location": "MONROEVILLE/EAST",
+    "stype": "YOUTH BJJ SCHEDULE",
+    "rev": "4/28/26",
+    "addr": "1 Racquet Lane | Monroeville, PA 15146",
+    "phone": "(412)-551-8119",
+    "web": "www.StoutPGH.com",
+    "days": [
+      [
+        {
+          "id": "e5400yu",
+          "time": "10:00 AM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "1kh26xb",
+          "time": "4:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        },
+        {
+          "id": "qmvysf0",
+          "time": "5:30 PM",
+          "level": "",
+          "disc": "",
+          "disc2": "",
+          "type": "noc"
+        }
+      ],
+      [
+        {
+          "id": "0e2lbh7",
+          "time": "4:30 PM",
+          "level": "Ages 5-6",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        },
+        {
+          "id": "um1dlg3",
+          "time": "5:30 PM",
+          "level": "Ages 7-13",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        }
+      ],
+      [],
+      [
+        {
+          "id": "zasj0sq",
+          "time": "4:30 PM",
+          "level": "Ages 5-6",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        },
+        {
+          "id": "h67q7pw",
+          "time": "5:30 PM",
+          "level": "Ages 7-13",
+          "disc": "Striking / Kickboxing",
+          "disc2": "",
+          "type": "striking"
+        },
+        {
+          "id": "ux70mo2",
+          "time": "5:30 PM",
+          "level": "Ages 7-13",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        }
+      ],
+      [
+        {
+          "id": "plptq3y",
+          "time": "5:30 PM",
+          "level": "Ages 7-13",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        },
+        {
+          "id": "kbfli5t",
+          "time": "5:30 PM",
+          "level": "Intermediate - Ages 7-13",
+          "disc": "No Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        }
+      ],
+      [],
+      [
+        {
+          "id": "pmackpq",
+          "time": "10:00 AM",
+          "level": "Ages 7-13",
+          "disc": "Gi - Youth BJJ",
+          "disc2": "",
+          "type": "youth"
+        }
+      ]
+    ]
+  }
+]

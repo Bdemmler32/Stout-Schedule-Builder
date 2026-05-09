@@ -506,25 +506,40 @@ function renderFlyer() {
   // Re-apply zoom after re-render (zoomWrap gets recreated each time)
   requestAnimationFrame(applyZoom);
 
-  // #10: In preview mode, auto-scale block text if rows overflow the fixed 816px height
+  // Auto-scale preview: measure natural content height, then either:
+  //   - scale DOWN if content overflows 676px (too many rows)
+  //   - flex-STRETCH if content fits (distribute rows to fill, footer pinned)
   if (isPreview) {
     requestAnimationFrame(() => {
-      const body = document.getElementById('schedBody');
+      const body    = document.getElementById('schedBody');
       const flyerEl = document.getElementById('flyerEl');
       if (!body || !flyerEl) return;
-      // Available height for sched-body = flyer height - header - day-headers - footer
-      const available = flyerEl.clientHeight - 62 - 34 - 44; // px
-      let scale = 1.0;
-      const step = 0.05;
-      while (body.scrollHeight > available + 2 && scale > 0.4) {
-        scale = Math.round((scale - step) * 100) / 100;
-        body.style.setProperty('--cb-scale', scale);
-        // Force font-size on all cb-inner children
-        body.querySelectorAll('.cb-inner').forEach(el => {
-          el.style.fontSize = `${scale}em`;
-        });
-        body.querySelectorAll('.cb-time, .cb-disc, .cb-level, .cb-disc2, .noc-text').forEach(el => {
-          el.style.fontSize = '';
+
+      // Step 1: measure natural (unscaled, unflexed) height
+      body.style.cssText = 'display:block;overflow:visible;';
+      const natural  = body.scrollHeight;
+      const available = 816 - 62 - 34 - 44; // 676px
+
+      if (natural > available) {
+        // TOO MANY ROWS: scale the body down to fit
+        const ratio   = Math.max(0.35, available / natural);
+        const expandW = Math.round(1056 / ratio);
+        body.style.cssText = [
+          'display:block',
+          'overflow:visible',
+          `transform:scale(${ratio})`,
+          'transform-origin:top left',
+          `width:${expandW}px`,
+          `height:${Math.round(natural * ratio)}px`,
+        ].join(';');
+      } else {
+        // FEW ROWS: restore flex so sched-body fills remaining space,
+        // rows stretch evenly and footer stays pinned at bottom of 816px
+        body.style.cssText = 'flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;';
+        // Also let time-rows flex-fill
+        body.querySelectorAll('.time-row').forEach(row => {
+          row.style.flex = '1';
+          row.style.minHeight = '0';
         });
       }
     });

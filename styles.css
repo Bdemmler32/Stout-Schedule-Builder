@@ -165,7 +165,7 @@ html, body {
   box-shadow: 0 0 0 1px #bbb, 0 16px 60px rgba(0,0,0,0.75); overflow: hidden;
 }
 .flyer.edit-mode    { border-radius: 0 6px 6px 0; height: auto; }
-.flyer.preview-mode { border-radius: 6px; height: 816px; display: flex; flex-direction: column; }
+.flyer.preview-mode { border-radius: 6px; height: 816px; display: flex; flex-direction: column; overflow: hidden; }
 
 /* ── FLYER HEADER (62px) ── */
 .flyer-header {
@@ -206,12 +206,13 @@ html, body {
 /* ── SCHEDULE BODY ── */
 .sched-body { position: relative; }
 .flyer.edit-mode    .sched-body { display: block; }
-.flyer.preview-mode .sched-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+/* Preview: starts as block so JS can measure natural scrollHeight.
+   JS then switches to flex:1 (few rows) or keeps block+transform (many rows). */
+.flyer.preview-mode .sched-body { display: block; overflow: visible; }
 
 /* ── TIME ROW ──
-   In EDIT mode each row = exactly (SLOT_H * 2) px — one full-hour block height.
-   In PREVIEW mode rows flex-fill equally, except noc rows which are auto height.
-*/
+   Edit: fixed height set inline by JS (SLOT_H * 2).
+   Preview: auto height by default; JS sets flex:1 on rows when stretching. */
 .time-row {
   display: grid; grid-template-columns: repeat(7,1fr);
   border-bottom: 1px solid #e8e8e8;
@@ -219,12 +220,8 @@ html, body {
 .time-row:last-child { border-bottom: none; }
 .time-row:nth-child(odd)  { background: #fff; }
 .time-row:nth-child(even) { background: #f5f5f5; }
-
-/* edit: row height set inline via style attr from JS */
-.flyer.edit-mode .time-row { overflow: visible; }
-/* preview: fill space */
-.flyer.preview-mode .time-row         { flex: 1; min-height: 0; }
-.flyer.preview-mode .time-row.noc-row { flex: 0 0 auto; min-height: 50px; max-height: 70px; }
+.flyer.edit-mode .time-row    { overflow: visible; }
+.flyer.preview-mode .time-row { height: auto; min-height: 60px; }
 
 /* ── DAY CELL ── */
 .day-cell {
@@ -699,10 +696,10 @@ input[type="time"].bm-input {
   .canvas-area { padding: 0 !important; background: white !important; display: block !important; overflow: visible !important; }
   .mode-pill { display: none !important; }
   .time-ruler { display: none !important; }
-  .flyer { width: 11in !important; height: 8.5in !important; box-shadow: none !important; outline: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; }
-  .sched-body { flex: 1 !important; display: flex !important; flex-direction: column !important; min-height: 0 !important; overflow: hidden !important; }
-  .time-row { flex: 1 !important; min-height: 0 !important; }
-  .time-row.noc-row { flex: 0 0 auto !important; min-height: 44px !important; }
+  .flyer { width: 11in !important; height: 8.5in !important; box-shadow: none !important; outline: none !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+  .sched-body { display: block !important; overflow: visible !important; }
+  .time-row { height: auto !important; min-height: 60px !important; }
+  .time-row.noc-row { min-height: 44px !important; }
   .cb-del, .add-here { display: none !important; }
   @page { size: 11in 8.5in landscape; margin: 0; }
 }
