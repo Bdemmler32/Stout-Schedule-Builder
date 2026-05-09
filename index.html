@@ -14,7 +14,42 @@
 </head>
 <body>
 
-<div class="app">
+<!-- MOBILE GATE — shown on narrow viewports, hidden on desktop -->
+<div id="mobile-gate">
+  <div class="mg-content">
+    <img src="stoutpgh-logo.png" class="mg-logo" alt="StoutPGH"
+      onerror="this.style.display='none'">
+    <h1 class="mg-headline">Desktop Required</h1>
+    <p class="mg-body">
+      The StoutPGH Schedule Builder is a desktop tool.<br>
+      It requires a wide screen to display and edit schedule flyers correctly.
+    </p>
+    <div class="mg-instructions">
+      <div class="mg-instruction-title"><i class="fas fa-mobile-alt"></i>&nbsp; Enable Desktop Mode</div>
+      <div class="mg-step">
+        <span class="mg-browser">Chrome / Edge</span>
+        Tap <strong>⋮</strong> → <strong>Desktop site</strong>
+      </div>
+      <div class="mg-step">
+        <span class="mg-browser">Safari</span>
+        Tap <strong>Share</strong> → <strong>Request Desktop Website</strong>
+      </div>
+      <div class="mg-step">
+        <span class="mg-browser">Firefox</span>
+        Tap <strong>⋮</strong> → <strong>Request Desktop Site</strong>
+      </div>
+      <div class="mg-step">
+        <span class="mg-browser">Samsung</span>
+        Tap <strong>⋮</strong> → <strong>Desktop version</strong>
+      </div>
+    </div>
+    <button class="mg-anyway-btn" onclick="forceDesktop()">
+      <i class="fas fa-desktop"></i>&nbsp; Try Anyway
+    </button>
+  </div>
+</div>
+
+<div class="app" id="mainApp">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -67,6 +102,8 @@
 
 </div>
 
+</div><!-- /mainApp -->
+
 <!-- Block Modal — closes only via X, Cancel, or Save buttons -->
 <div class="bm-overlay" id="blockModal"></div>
 
@@ -74,6 +111,26 @@
 <div class="ctx-menu" id="ctxMenu"></div>
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<script>
+// Mobile gate — must run before app.js so the gate is visible immediately
+let _forceDesktop = false;
+const MOBILE_BREAKPOINT = 1180; // sidebar(262) + canvas(1056) + breathing room
+
+function checkViewport() {
+  const isMobile = window.innerWidth < MOBILE_BREAKPOINT && !_forceDesktop;
+  document.getElementById('mobile-gate').style.display = isMobile ? 'flex' : 'none';
+  document.getElementById('mainApp').style.display     = isMobile ? 'none' : 'flex';
+}
+
+function forceDesktop() {
+  _forceDesktop = true;
+  checkViewport();
+}
+
+checkViewport();
+window.addEventListener('resize', checkViewport);
+</script>
 
 <script src="app.js"></script>
 </body>

@@ -703,3 +703,110 @@ input[type="time"].bm-input {
   .cb-del, .add-here { display: none !important; }
   @page { size: 11in 8.5in landscape; margin: 0; }
 }
+
+/* ============================================================
+   MOBILE GATE
+   ============================================================ */
+#mobile-gate {
+  display: none; /* JS controls this */
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0e0e0e;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mg-content {
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.mg-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.mg-headline {
+  font-family: 'Russo One', sans-serif;
+  font-size: 26px;
+  color: #f0b429;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.mg-body {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.6;
+}
+
+.mg-instructions {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.mg-instruction-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.mg-step {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.4;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.mg-step strong { color: #ccc; }
+
+.mg-browser {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f0b429;
+  white-space: nowrap;
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.mg-anyway-btn {
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #555;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.mg-anyway-btn:hover { border-color: #666; color: #888; }
